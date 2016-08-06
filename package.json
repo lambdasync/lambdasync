@@ -3,8 +3,19 @@
   "version": "1.0.0",
   "description": "Easy sync between local code and AWS lambda functions",
   "main": "src/bin/index.js",
+  "watch": {
+    "build": {
+      "patterns": [
+        "bin",
+        "src"
+      ],
+      "extensions": "js,json"
+    }
+  },
   "scripts": {
-    "build:cli": "rollup -c"
+    "build": "npm run build:cli",
+    "build:cli": "rollup -c",
+    "watch": "npm-watch"
   },
   "bin": {
     "lambdasync": "bin/lambdasync"
@@ -20,9 +31,12 @@
   },
   "homepage": "https://github.com/fanderzon/lambda-deployer#readme",
   "dependencies": {
+    "jsonfile": "2.3.1",
+    "minimist": "1.2.0",
     "shelljs": "0.7.3"
   },
   "devDependencies": {
+    "npm-watch": "0.1.5",
     "rollup-plugin-buble": "0.12.1",
     "rollup-plugin-commonjs": "3.3.1",
     "rollup-plugin-node-resolve": "2.0.0"
