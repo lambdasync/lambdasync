@@ -7,7 +7,7 @@ export function readFile(path, transform = input => input) {
         return reject(err);
       }
       try {
-        return transform(data);
+        return resolve(transform(data));
       } catch (err) {
         return reject(err);
       }
