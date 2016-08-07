@@ -1,7 +1,8 @@
 import path from 'path';
 import readline from 'readline';
-import jsonfile from 'jsonfile';
 import {SETTINGS_FILE} from './constants.js';
+import {readFile, writeFile} from './file.js';
+import {jsonStringify} from './transform.js';
 
 export const settingsFields = [
   'profileName', // Name of local aws-cli profile, default lambdasync
@@ -14,18 +15,9 @@ export const settingsFields = [
 const settingsPath = path.join(process.cwd(), SETTINGS_FILE);
 
 export function getSettings() {
-  return new Promise((resolve, reject) => {
-    jsonfile.readFile(settingsPath, (err, json) => {
-      if (err) {
-        return reject(err);
-      }
-      return resolve(json);
-    });
-  });
+  return readFile(settingsPath, JSON.parse);
 }
 
 export function putSettings(settings) {
-  jsonfile.writeFile(settingsPath, settings, {spaces: 2}, function (err) {
-    console.error(err)
-  });
+  return writeFile(settingsPath, settings, jsonStringify);
 }

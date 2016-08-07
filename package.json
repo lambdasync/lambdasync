@@ -31,7 +31,6 @@
   },
   "homepage": "https://github.com/fanderzon/lambda-deployer#readme",
   "dependencies": {
-    "jsonfile": "2.3.1",
     "minimist": "1.2.0",
     "shelljs": "0.7.3"
   },

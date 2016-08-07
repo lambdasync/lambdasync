@@ -1,5 +1,6 @@
 import readline from 'readline';
 import {settingsFields, putSettings} from './settings.js';
+import {readFile, writeFile} from './file.js';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -14,8 +15,13 @@ export function init() {
   prompt({}, settingsFields, 0, settings => {
     console.log('Init complete, creating setting file:\n', JSON.stringify(settings, null, '  '));
     putSettings(settings);
+    persistAwsConfig(settings);
     rl.close();
   });
+}
+
+function persistAwsConfig(config) {
+
 }
 
 function prompt(acc = {}, settings, index, cb) {
