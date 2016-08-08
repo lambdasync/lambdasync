@@ -3,13 +3,10 @@ import cp from 'child_process';
 import {getSettings} from './settings.js';
 import {LAMBDASYNC_BIN, TARGET_ROOT} from './constants.js';
 
-const moduleBin = path.join(__dirname, '..', 'node_modules', '.bin');
-const targetRoot = path.join(process.cwd());
-
 export default function deploy(settings) {
   getSettings()
     .then(settings => {
-      cp.exec('bestzip deploy.zip ./*', {cwd: LAMBDASYNC_BIN}, (err, stdout, stderr) => {
+      cp.exec(LAMBDASYNC_BIN + '/bestzip ./deploy.zip ./*', {cwd: TARGET_ROOT}, (err, stdout, stderr) => {
         if (err) {
           console.error(err);
           return;

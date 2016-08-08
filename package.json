@@ -27,7 +27,7 @@
     "type": "git",
     "url": "git+https://github.com/fanderzon/lambdasync.git"
   },
-  "author": "",
+  "author": "Fredrik Andersson",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/fanderzon/lambdasync/issues"
