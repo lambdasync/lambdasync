@@ -1,6 +1,12 @@
 import readline from 'readline';
 import {AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH} from './constants.js';
-import {settingsFields, putSettings} from './settings.js';
+import {
+  settingsInput,
+  settingsFields,
+  putSettings,
+  getAwsSettings,
+  filterSettings
+} from './settings.js';
 import {readFile, writeFile} from './file.js';
 import ini from 'ini';
 
@@ -12,9 +18,9 @@ const initRl = () => readline.createInterface({
 
 const rl = initRl();
 
-export function init() {
-  prompt({}, settingsFields, 0, settings => {
-    console.log('Init complete, creating setting file:\n', JSON.stringify(settings, null, '  '));
+export default function init() {
+  prompt({}, settingsInput, 0, settings => {
+    console.log('Init complete, creating setting file:\n', JSON.stringify(filterSettings(settings, settingsFields), null, '  '));
     putSettings(settings);
     persistAwsConfig(settings);
     rl.close();
@@ -22,10 +28,7 @@ export function init() {
 }
 
 function persistAwsConfig(conf) {
-  Promise.all([
-    readFile(AWS_CREDENTIALS_PATH, ini.parse),
-    readFile(AWS_CONFIG_PATH, ini.parse)
-  ])
+  getAwsSettings()
     .then(([credentials, config]) => {
       const persistCredentials = () => {
         const newCredentials = Object.assign({}, credentials);

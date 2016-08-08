@@ -1,6 +1,7 @@
 import minimist from 'minimist';
 import {getSettings} from './settings.js';
-import {init} from './init.js';
+import init from './init.js';
+import deploy from './deploy.js';
 
 const command = minimist(process.argv.slice(2), {
   alias: {
@@ -11,21 +12,15 @@ const command = minimist(process.argv.slice(2), {
 function handleCommand(command) {
   if (command._[0] === 'init') {
     console.log('Please provide the following information to setup lambdasync');
-    init();
-    return;
+    return init();
   }
 
   if (command.version) {
     console.log('version');
+    return;
   }
 
-  getSettings()
-    .then(settings => {
-      console.log('resolved settings', settings);
-    })
-    .catch(err => {
-      console.log('No config found, run: lambdasync init');
-    })
+  return deploy();
 }
 
 handleCommand(command);

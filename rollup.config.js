@@ -21,6 +21,6 @@ export default {
     'fs',
     'path',
     'module',
-    'source-map-support'
+    'child_process'
   ]
 };
