@@ -1,8 +1,9 @@
-import minimist from 'minimist';
-import {getSettings} from './settings.js';
-import init from './init.js';
-import deploy from './deploy.js';
-import {version} from '../../package.json';
+#!/usr/bin/env node
+const minimist = require('minimist');
+const {getSettings} = require('./settings.js');
+const init = require('./init.js');
+const deploy = require('./deploy.js');
+const {version} = require('../../package.json');
 const command = minimist(process.argv.slice(2), {
   alias: {
     v: 'version'

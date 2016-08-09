@@ -1,14 +1,14 @@
-import readline from 'readline';
-import {AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH} from './constants.js';
-import {
+const readline = require('readline');
+const {AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH} = require('./constants.js');
+const {
   settingsInput,
   settingsFields,
   putSettings,
   getAwsSettings,
   filterSettings
-} from './settings.js';
-import {readFile, writeFile} from './file.js';
-import ini from 'ini';
+} = require('./settings.js');
+const {readFile, writeFile} = require('./file.js');
+const ini = require('ini');
 
 
 const initRl = () => readline.createInterface({
@@ -18,7 +18,7 @@ const initRl = () => readline.createInterface({
 
 const rl = initRl();
 
-export default function init() {
+function init() {
   prompt({}, settingsInput, 0, settings => {
     console.log('Init complete, creating setting file:\n', JSON.stringify(filterSettings(settings, settingsFields), null, '  '));
     putSettings(settings);
@@ -79,3 +79,5 @@ function prompt(acc = {}, settings, index, cb) {
     cb(acc);
   }
 }
+
+module.exports = init;

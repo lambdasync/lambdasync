@@ -1,6 +1,6 @@
-import cp from 'child_process';
+const cp = require('child_process');
 
-export function promisedExec(command, options) {
+function promisedExec(command, options) {
   return new Promise((resolve, reject) => {
     cp.exec(command, options = {}, (err, stdout, stderr) => {
       if (err) {
@@ -11,3 +11,7 @@ export function promisedExec(command, options) {
     });
   });
 }
+
+module.exports = {
+  promisedExec
+};
