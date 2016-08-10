@@ -1,6 +1,6 @@
-import fs from 'fs';
+const fs = require('fs');
 
-export function readFile(path, transform = input => input) {
+function readFile(path, transform = input => input) {
   return new Promise((resolve, reject) => {
     fs.readFile(path, 'utf8', (err, data) => {
       if (err) {
@@ -15,7 +15,7 @@ export function readFile(path, transform = input => input) {
   });
 }
 
-export function writeFile(path, obj, transform = input => input.toString()) {
+function writeFile(path, obj, transform = input => input.toString()) {
   return new Promise((resolve, reject) => {
     let content = '';
     try {
@@ -32,3 +32,8 @@ export function writeFile(path, obj, transform = input => input.toString()) {
     });
   });
 }
+
+module.exports = {
+  readFile,
+  writeFile
+};
