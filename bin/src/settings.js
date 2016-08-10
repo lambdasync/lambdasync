@@ -35,16 +35,8 @@ function putSettings(settings) {
 }
 
 function updateSettings(newFields) {
-  console.log('\n\n\n');
-  console.log('updateSettings', newFields);
-  console.log('\n\n\n');
   return getSettings()
     .then(settings => {
-      console.log('\n\n\n');
-      console.log('updateSettings settings', settings);
-      console.log('\n\n\n');
-      console.log('updateSettings merged settings', Object.assign({}, settings, newFields));
-      console.log('\n\n\n');
       return putSettings(Object.assign({}, settings, newFields));
     });
 }
