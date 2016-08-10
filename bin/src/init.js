@@ -1,7 +1,6 @@
-const readline = require('readline');
+const inquirer = require('inquirer');
 const {AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH} = require('./constants.js');
 const {
-  settingsInput,
   settingsFields,
   putSettings,
   getAwsSettings,
@@ -9,22 +8,27 @@ const {
 } = require('./settings.js');
 const {readFile, writeFile} = require('./file.js');
 const ini = require('ini');
-
-
-const initRl = () => readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-const rl = initRl();
+const {
+  PROMPT_INPUT_PROFILE_NAME,
+  PROMPT_INPUT_FUNCTION_NAME,
+  PROMPT_INPUT_ACCESS_KEY,
+  PROMPT_INPUT_SECRET_KEY,
+  PROMPT_CHOICE_REGION
+} = require('./constants.js');
 
 function init() {
-  prompt({}, settingsInput, 0, settings => {
-    console.log('Init complete, creating setting file:\n', JSON.stringify(filterSettings(settings, settingsFields), null, '  '));
-    putSettings(settings);
-    persistAwsConfig(settings);
-    rl.close();
-  });
+  inquirer.prompt([
+    PROMPT_INPUT_PROFILE_NAME,
+    PROMPT_INPUT_FUNCTION_NAME,
+    PROMPT_INPUT_ACCESS_KEY,
+    PROMPT_INPUT_SECRET_KEY,
+    PROMPT_CHOICE_REGION
+  ])
+    .then(function (result) {
+      console.log('Init complete, creating setting file:\n', JSON.stringify(filterSettings(result, settingsFields), null, '  '));
+      putSettings(result);
+      persistAwsConfig(result);
+    });
 }
 
 function persistAwsConfig(conf) {
@@ -67,17 +71,6 @@ function persistAwsConfig(conf) {
         persistConfig();
       }
     });
-}
-
-function prompt(acc = {}, settings, index, cb) {
-  if (settings[index]) {
-    rl.question(settings[index] + ': ', answer => {
-      acc[settings[index]] = answer;
-      prompt(acc, settings, index + 1, cb);
-    });
-  } else {
-    cb(acc);
-  }
 }
 
 module.exports = init;

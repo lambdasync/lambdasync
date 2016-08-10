@@ -16,6 +16,8 @@ const settingsInput = [
 const settingsFields = [
   'profileName',
   'lambdaName',
+  'lambdaArn',
+  'lambdaRole',
   'region'
 ];
 
@@ -30,6 +32,21 @@ function putSettings(settings) {
     settingsPath,
     filterSettings(settings, settingsFields),
     jsonStringify);
+}
+
+function updateSettings(newFields) {
+  console.log('\n\n\n');
+  console.log('updateSettings', newFields);
+  console.log('\n\n\n');
+  return getSettings()
+    .then(settings => {
+      console.log('\n\n\n');
+      console.log('updateSettings settings', settings);
+      console.log('\n\n\n');
+      console.log('updateSettings merged settings', Object.assign({}, settings, newFields));
+      console.log('\n\n\n');
+      return putSettings(Object.assign({}, settings, newFields));
+    });
 }
 
 function getAwsSettings() {
@@ -51,6 +68,7 @@ module.exports = {
   settingsFields,
   getSettings,
   putSettings,
+  updateSettings,
   getAwsSettings,
   filterSettings
 };
