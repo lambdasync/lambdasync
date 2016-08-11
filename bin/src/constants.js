@@ -6,6 +6,7 @@ const AWS_USER_DIR = path.join(userHome, '.aws');
 const AWS_CREDENTIALS_PATH = path.join(AWS_USER_DIR, 'credentials');
 const AWS_CONFIG_PATH = path.join(AWS_USER_DIR, 'config');
 const LAMBDASYNC_ROOT = path.join(__dirname, '..', '..');
+const LAMBDASYNC_SRC = path.join(LAMBDASYNC_ROOT, 'bin', 'src');
 const LAMBDASYNC_BIN = path.join(LAMBDASYNC_ROOT, 'node_modules', '.bin');
 const TARGET_ROOT = process.cwd();
 const PROMPT_CONFIRM_OVERWRITE_FUNCTION = {type: 'confirm', name: 'confirm', message: 'Function already exists, overwrite?'};
@@ -29,6 +30,7 @@ module.exports = {
   AWS_CREDENTIALS_PATH,
   AWS_CONFIG_PATH,
   LAMBDASYNC_ROOT,
+  LAMBDASYNC_SRC,
   LAMBDASYNC_BIN,
   TARGET_ROOT,
   PROMPT_CONFIRM_OVERWRITE_FUNCTION,

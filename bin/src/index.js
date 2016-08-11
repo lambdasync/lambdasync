@@ -12,12 +12,11 @@ const command = minimist(process.argv.slice(2), {
 
 function handleCommand(command, settings) {
   if (command._[0] === 'init') {
-    console.log('Please provide the following information to setup lambdasync');
     return init();
   }
 
   if (command.version) {
-    console.log('Lambdasync version: ' + version);
+    console.log('lambdasync version: ' + version);
     return;
   }
 
