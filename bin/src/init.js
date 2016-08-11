@@ -7,7 +7,7 @@ const {markdown, addInputDefault} = require('./util.js');
 const {AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH, LAMBDASYNC_ROOT} = require('./constants.js');
 const {
   settingsFields,
-  putSettings,
+  updateSettings,
   getAwsSettings,
   filterSettings
 } = require('./settings.js');
@@ -33,6 +33,7 @@ function getProfile() {
           .then(([credentials, config]) => {
             if (credentials[profileName] && config['profile ' + profileName]) {
               resolve({
+                profileName: profileName,
                 accessKey: credentials[profileName].aws_access_key_id,
                 secretKey: credentials[profileName].aws_secret_access_key,
                 region: config['profile ' + profileName].region
@@ -55,8 +56,10 @@ function getSettingsInput(defaults) {
     addInputDefault(defaults, PROMPT_CHOICE_REGION)
   ])
     .then(function (result) {
+      // Add profileName to result
+      result.profileName = defaults.profileName;
       console.log('Init complete, creating setting file:\n', JSON.stringify(filterSettings(result, settingsFields), null, '  '));
-      putSettings(result);
+      updateSettings(result);
       persistAwsConfig(result);
     });
 }
