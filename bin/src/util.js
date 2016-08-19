@@ -34,8 +34,44 @@ function addInputDefault(defaults, inputConfig) {
   return inputConfig;
 }
 
+function getProductionDeps() {
+  return new Promise((resolve, reject) => {
+    cp.exec('npm ls --json --production', (err, stdout, stderr) => {
+      try {
+        resolve(JSON.parse(stdout).dependencies);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  });
+}
+
+function flattenDeps(deps = {}) {
+  return Object.keys(deps).reduce((acc, moduleName) => {
+    return [
+      ...acc,
+      moduleName,
+      ...flattenDeps(deps[moduleName].dependencies)
+    ];
+  }, []);
+}
+
+function removeDuplicates(flatDeps) {
+  return flatDeps.reduce((acc, moduleName) => {
+    return acc.includes(moduleName) ?
+      acc : [ ...acc, moduleName ];
+  }, []);
+}
+
+function getProductionModules() {
+  return getProductionDeps()
+    .then(flattenDeps)
+    .then(removeDuplicates);
+}
+
 module.exports = {
   promisedExec,
   markdown,
-  addInputDefault
+  addInputDefault,
+  getProductionModules
 };
