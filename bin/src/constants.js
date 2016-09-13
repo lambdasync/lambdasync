@@ -1,7 +1,7 @@
 const path = require('path');
 const userHome = require('user-home');
 
-const SETTINGS_FILE = '.lambdasyncrc';
+const SETTINGS_FILE = 'lambdasync.json';
 const AWS_USER_DIR = path.join(userHome, '.aws');
 const AWS_CREDENTIALS_PATH = path.join(AWS_USER_DIR, 'credentials');
 const AWS_CONFIG_PATH = path.join(AWS_USER_DIR, 'config');

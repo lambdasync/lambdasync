@@ -69,9 +69,27 @@ function getProductionModules() {
     .then(removeDuplicates);
 }
 
+function awsPromise(api, method, params) {
+  return new Promise((resolve, reject) => {
+    api[method](params, function(err, data) {
+      if (err) {
+        return reject(err);
+      }
+      return resolve(data);
+    });
+  });
+}
+
+function mergeData(data, promise) {
+  return promise
+    .then(result => Object.assign({}, data, result));
+}
+
 module.exports = {
   promisedExec,
   markdown,
   addInputDefault,
-  getProductionModules
+  getProductionModules,
+  awsPromise,
+  mergeData
 };
