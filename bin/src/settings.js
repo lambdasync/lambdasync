@@ -18,7 +18,12 @@ const settingsFields = [
   'lambdaName',
   'lambdaArn',
   'lambdaRole',
-  'region'
+  'region',
+  'apiGatewayId',
+  'apiGatewayName',
+  'apiGatewayPath',
+  'apiGatewayRestApiId',
+  'apiGatewayResourceId'
 ];
 
 const settingsPath = path.join(process.cwd(), SETTINGS_FILE);

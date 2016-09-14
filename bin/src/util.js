@@ -80,10 +80,15 @@ function awsPromise(api, method, params) {
   });
 }
 
-function mergeData(data, promise) {
-  return promise
-    .then(result => Object.assign({}, data, result));
+function stripLambdaVersion(lambdaArn) {
+  return lambdaArn.substr(0,lambdaArn.lastIndexOf(':'));
 }
+
+const chainData = fn =>
+  (res = {}) => Promise.resolve(fn(res))
+    .then(out => Object.assign(res, out));
+
+const startWith = data => Promise.resolve(data);
 
 module.exports = {
   promisedExec,
@@ -91,5 +96,7 @@ module.exports = {
   addInputDefault,
   getProductionModules,
   awsPromise,
-  mergeData
+  stripLambdaVersion,
+  chainData,
+  startWith
 };
