@@ -29,7 +29,8 @@ const settingsFields = [
 const settingsPath = path.join(process.cwd(), SETTINGS_FILE);
 
 function getSettings() {
-  return readFile(settingsPath, JSON.parse);
+  return readFile(settingsPath, JSON.parse)
+    .catch(() => ({}))
 }
 
 function putSettings(settings) {
@@ -50,7 +51,8 @@ function getAwsSettings() {
   return Promise.all([
     readFile(AWS_CREDENTIALS_PATH, ini.parse),
     readFile(AWS_CONFIG_PATH, ini.parse)
-  ]);
+  ])
+    .catch(() => [{}, {}])
 }
 
 

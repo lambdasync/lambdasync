@@ -81,7 +81,14 @@ function awsPromise(api, method, params) {
 }
 
 function stripLambdaVersion(lambdaArn) {
-  return lambdaArn.substr(0,lambdaArn.lastIndexOf(':'));
+  return lambdaArn.replace(/:[0-9]+$/, '');
+}
+
+function makeLambdaPolicyArn({lambdaArn, apiGatewayId}) {
+  return lambdaArn
+    .replace('arn:aws:lambda', 'arn:aws:execute-api')
+    .replace(/function.*?$/g, apiGatewayId)
+    .concat('/*/GET/api')
 }
 
 const chainData = fn =>
@@ -98,5 +105,6 @@ module.exports = {
   awsPromise,
   stripLambdaVersion,
   chainData,
-  startWith
+  startWith,
+  makeLambdaPolicyArn
 };

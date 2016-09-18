@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const {LAMBDASYNC_ROOT} = require('./constants.js');
 const {updateSettings} = require('./settings.js');
-const {awsPromise, chainData, startWith, stripLambdaVersion} = require('./util.js');
+const {awsPromise, chainData, startWith} = require('./util.js');
 let AWS;
 let apigateway;
 
@@ -109,7 +109,7 @@ function addMethodResponse({restApiId, resourceId, httpMethod}) {
   });
 }
 
-function addIntegration({restApiId, resourceId, httpMethod, region, lambdaArn}) {
+function addIntegration({restApiId, resourceId, httpMethod, region, lambdaArn, lambdaRole}) {
   const uri = `arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations`;
   return awsPromise(apigateway, 'putIntegration', {
     restApiId,
@@ -118,6 +118,7 @@ function addIntegration({restApiId, resourceId, httpMethod, region, lambdaArn}) 
     integrationHttpMethod: 'GET',
     type: 'AWS',
     uri,
+    // credentials: lambdaRole,
     requestTemplates: {
       'application/json': fs.readFileSync(path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'integration-request.vm'), 'utf8')
     },
@@ -134,13 +135,14 @@ function addIntegrationResponse({restApiId, resourceId, httpMethod}) {
   });
 }
 
-function addMappings({id, restApiId, httpMethod, region, lambdaArn}) {
+function addMappings({id, restApiId, httpMethod, region, lambdaArn, lambdaRole}) {
   return startWith({
       restApiId,
       resourceId: id,
       httpMethod,
       region,
-      lambdaArn: stripLambdaVersion(lambdaArn)
+      lambdaArn: lambdaArn,
+      lambdaRole
   })
     .then(chainData(addMethod))
     .then(chainData(addMethodResponse))
@@ -164,6 +166,7 @@ function setupApiGateway(
     })
     .then(result => {
       console.log('API Gateway created', result);
+      console.log(' ');
       updateSettings({
         apiGatewayRestApiId: result[0].restApiId,
         apiGatewayResourceId: result[0].resourceId
