@@ -115,7 +115,7 @@ function addIntegration({restApiId, resourceId, httpMethod, region, lambdaArn, l
     restApiId,
     resourceId,
     httpMethod,
-    integrationHttpMethod: 'GET',
+    integrationHttpMethod: 'POST',
     type: 'AWS',
     uri,
     // credentials: lambdaRole,
@@ -141,13 +141,20 @@ function addMappings({id, restApiId, httpMethod, region, lambdaArn, lambdaRole})
       resourceId: id,
       httpMethod,
       region,
-      lambdaArn: lambdaArn,
+      lambdaArn,
       lambdaRole
   })
     .then(chainData(addMethod))
     .then(chainData(addMethodResponse))
     .then(chainData(addIntegration))
+    .then(chainData(() => ({httpMethod})))
     .then(chainData(addIntegrationResponse))
+}
+
+const logger = label => input => {
+  console.log('\n\n');
+  console.log(label, input);
+  return input;
 }
 
 function setupApiGateway(
@@ -155,8 +162,11 @@ function setupApiGateway(
   settings
 ) {
   return createApi({name, description}, settings)
+    .then(logger('after createApi'))
     .then(({id, name}) => persistApiGateway({id, name, path}))
+    .then(logger('after persistApiGateway'))
     .then(addResourceToApiGateway)
+    .then(logger('after addResourceToApiGateway'))
     .then(res => {
       const params = custom => Object.assign(res, settings, custom);
       return Promise.all([
@@ -164,9 +174,9 @@ function setupApiGateway(
         addMappings(params({httpMethod: 'POST'}))
       ])
     })
+    .then(logger('after allMethods'))
     .then(result => {
       console.log('API Gateway created', result);
-      console.log(' ');
       updateSettings({
         apiGatewayRestApiId: result[0].restApiId,
         apiGatewayResourceId: result[0].resourceId

@@ -36,7 +36,7 @@ function handleCommand(command) {
     .then(settings => {
       console.log('deploy complete', settings);
       return !settings.apiGatewayId ?
-        setupApiGateway({name: 'testing50', description: 'A test api', path: 'api'}, settings) :
+        setupApiGateway({name: 'testing40', description: 'A test api', path: 'api'}, settings) :
         null;
     })
     .then(getSettings)
