@@ -8,9 +8,7 @@ function getGateway(settings) {
 }
 
 function setLambdaPermission(settings) {
-  console.log(settings);
   const api = getGateway(settings);
-  console.log(api);
   const {lambdaArn, apiGatewayId} = settings;
   const params = {
     Action: 'lambda:InvokeFunction',

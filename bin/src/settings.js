@@ -43,7 +43,9 @@ function putSettings(settings) {
 function updateSettings(newFields) {
   return getSettings()
     .then(settings => {
-      return putSettings(Object.assign({}, settings, newFields));
+      const newSettings = Object.assign({}, settings, newFields);
+      return putSettings(newSettings)
+        .then(() => newSettings);
     });
 }
 

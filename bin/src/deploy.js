@@ -57,11 +57,10 @@ function doDeploy(type) {
 function handleSuccess(result) {
   console.log('Successfully synced function', result);
   promisedExec(LAMBDASYNC_BIN + '/rimraf deploy.zip', targetOptions);
-  updateSettings({
+  return updateSettings({
     lambdaArn: stripLambdaVersion(result.FunctionArn),
     lambdaRole: result.Role
   });
-  return result;
 }
 
 function functionExists(functionName) {
