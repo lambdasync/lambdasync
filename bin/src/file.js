@@ -28,7 +28,7 @@ function writeFile(path, obj, transform = input => input.toString()) {
       if (err) {
         return reject(err);
       }
-      return resolve();
+      return resolve(content);
     });
   });
 }

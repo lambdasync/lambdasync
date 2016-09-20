@@ -14,17 +14,26 @@ const settingsInput = [
 ];
 
 const settingsFields = [
+  'accountId',
   'profileName',
   'lambdaName',
   'lambdaArn',
   'lambdaRole',
-  'region'
+  'lambdaPolicy',
+  'region',
+  'apiGatewayId',
+  'apiGatewayName',
+  'apiGatewayPath',
+  'apiGatewayUrl',
+  'apiGatewayRestApiId',
+  'apiGatewayResourceId'
 ];
 
 const settingsPath = path.join(process.cwd(), SETTINGS_FILE);
 
 function getSettings() {
-  return readFile(settingsPath, JSON.parse);
+  return readFile(settingsPath, JSON.parse)
+    .catch(() => ({}))
 }
 
 function putSettings(settings) {
@@ -37,7 +46,9 @@ function putSettings(settings) {
 function updateSettings(newFields) {
   return getSettings()
     .then(settings => {
-      return putSettings(Object.assign({}, settings, newFields));
+      const newSettings = Object.assign({}, settings, newFields);
+      return putSettings(newSettings)
+        .then(getSettings);
     });
 }
 
@@ -45,7 +56,8 @@ function getAwsSettings() {
   return Promise.all([
     readFile(AWS_CREDENTIALS_PATH, ini.parse),
     readFile(AWS_CONFIG_PATH, ini.parse)
-  ]);
+  ])
+    .catch(() => [{}, {}])
 }
 
 

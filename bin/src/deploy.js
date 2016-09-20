@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const inquirer = require('inquirer');
-const {promisedExec} = require('./util.js');
+const {promisedExec, stripLambdaVersion} = require('./util.js');
 const {getSettings, updateSettings} = require('./settings.js');
 const {
   LAMBDASYNC_BIN,
@@ -20,17 +20,21 @@ function deploy(deploySettings) {
   const AWS = aws(settings);
   lambda = new AWS.Lambda();
 
-  functionExists(settings.lambdaName)
+  return functionExists(settings.lambdaName)
     .then(functionExists => {
-      // If function doesn't already exist just deploy it
+      // If function doesn't already exist, or if it was already deployed
+      // by lambdasync lets just deploy it
       if (!functionExists) {
         return doDeploy('new');
       }
-      // Otherwise let's ask to make sure
-      inquirer.prompt([PROMPT_CONFIRM_OVERWRITE_FUNCTION])
+      if (settings.lambdaArn) {
+        return doDeploy('update');
+      }
+      // Otherwise if first deploy of existing function let's ask to make sure
+      return inquirer.prompt([PROMPT_CONFIRM_OVERWRITE_FUNCTION])
         .then(function (result) {
           if (result.confirm) {
-            doDeploy('update');
+            return doDeploy('update');
           } else {
             console.log('You answered no, aborting deploy');
           }
@@ -40,20 +44,21 @@ function deploy(deploySettings) {
 
 function doDeploy(type) {
   const deployFunc = type === 'new' ? createFunction : updateFunctionCode;
-  zip()
+  return zip()
     .then(deployFunc)
     .then(handleSuccess)
     .catch(err => {
       console.log('No config found, first run: lambdasync init');
       console.error(err);
+      return err;
     });
 }
 
 function handleSuccess(result) {
   console.log('Successfully synced function', result);
   promisedExec(LAMBDASYNC_BIN + '/rimraf deploy.zip', targetOptions);
-  updateSettings({
-    lambdaArn: result.FunctionArn,
+  return updateSettings({
+    lambdaArn: stripLambdaVersion(result.FunctionArn),
     lambdaRole: result.Role
   });
 }
@@ -102,7 +107,7 @@ function createFunction() {
       },
       FunctionName: settings.lambdaName,
       Handler: 'index.handler',
-      Role: 'arn:aws:iam::598075967016:role/foodographer-api-dev-r-IamRoleLambda-KPQ9UITBWAJ6', // lambda_basic_execution
+      Role: settings.lambdaRole,
       Runtime: 'nodejs4.3', /* required */
       Description: description, // package.json description
       MemorySize: 128, // default

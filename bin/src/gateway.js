@@ -1,5 +1,9 @@
 const aws = require('./aws.js');
+const fs = require('fs');
+const path = require('path');
+const {LAMBDASYNC_ROOT} = require('./constants.js');
 const {updateSettings} = require('./settings.js');
+const {awsPromise, chainData, startWith, logger} = require('./util.js');
 let AWS;
 let apigateway;
 
@@ -43,7 +47,6 @@ function addResource({parentId, restApiId, pathPart} = {}, settings) {
 }
 
 function getResources({restApiId} = {}, settings) {
-  console.log('getResources', {restApiId});
   apigateway = getGateway(settings);
   return new Promise((resolve, reject) => {
     apigateway.getResources({restApiId}, function(err, data) {
@@ -69,7 +72,12 @@ function addResourceToApiGateway({id, path} = {}, settings) {
   const restApiId = id;
   return getRootResource({id: restApiId})
     .then((id) => {
-      return addResource({parentId: id, restApiId, pathPart: path});
+      return startWith({
+        restApiId,
+        parentId: id,
+        pathPart: path
+      })
+        .then(chainData(addResource));
     });
 }
 
@@ -78,16 +86,112 @@ function persistApiGateway({id, name, path} = {}) {
   return {id, name, path};
 }
 
-function setupApiGateway(
-  {name, description, path} = {name:  defaultName(), description: 'lambdasync deployed api', path: 'api'},
-  settings
-) {
+function addMethod({restApiId, resourceId, httpMethod}) {
+  return awsPromise(apigateway, 'putMethod', {
+    restApiId,
+    resourceId,
+    httpMethod,
+    authorizationType: 'NONE',
+    apiKeyRequired: false,
+    requestParameters: {}
+  });
+}
+
+function addMethodResponse({restApiId, resourceId, httpMethod}) {
+  return awsPromise(apigateway, 'putMethodResponse', {
+    restApiId,
+    resourceId,
+    httpMethod,
+    statusCode: '200',
+    responseModels: {
+      'application/json': 'Empty'
+    }
+  });
+}
+
+function addIntegration({restApiId, resourceId, httpMethod, region, lambdaArn, lambdaRole}) {
+  const uri = `arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations`;
+  return awsPromise(apigateway, 'putIntegration', {
+    restApiId,
+    resourceId,
+    httpMethod,
+    integrationHttpMethod: 'POST',
+    type: 'AWS',
+    uri,
+    // credentials: lambdaRole,
+    requestTemplates: {
+      'application/json': fs.readFileSync(path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'integration-request.vm'), 'utf8')
+    },
+    passthroughBehavior: 'WHEN_NO_TEMPLATES'
+  });
+}
+
+function addIntegrationResponse({restApiId, resourceId, httpMethod}) {
+  return awsPromise(apigateway, 'putIntegrationResponse', {
+    restApiId,
+    resourceId,
+    httpMethod,
+    statusCode: '200'
+  });
+}
+
+function addMappings({id, restApiId, httpMethod, region, lambdaArn, lambdaRole}) {
+  return startWith({
+      restApiId,
+      resourceId: id,
+      httpMethod,
+      region,
+      lambdaArn,
+      lambdaRole
+  })
+    .then(chainData(addMethod))
+    .then(chainData(addMethodResponse))
+    .then(chainData(addIntegration))
+    .then(chainData(() => ({httpMethod})))
+    .then(chainData(addIntegrationResponse))
+}
+
+function deployApi({apiGatewayRestApiId}) {
+  const stageName = 'prod';
+  const apiGatewayUrl = `https://${apiGatewayRestApiId}.execute-api.eu-west-1.amazonaws.com/${stageName}`;
+  console.log('apiGatewayUrl', apiGatewayUrl);
+  return awsPromise(apigateway, 'createDeployment', {
+    restApiId: apiGatewayRestApiId,
+    stageName
+  })
+    .then(updateSettings({
+      apiGatewayUrl
+    }));
+}
+
+function setupApiGateway(settings) {
+  if (settings.apiGatewayId) {
+    return settings;
+  }
+  const name = `api-${settings.lambdaName}`;
+  const description = `Lambdasync API for function ${settings.lambdaName}`;
+  const path = 'api';
+
   return createApi({name, description}, settings)
+    .then(logger('after createApi'))
     .then(({id, name}) => persistApiGateway({id, name, path}))
+    .then(logger('after persistApiGateway'))
     .then(addResourceToApiGateway)
+    .then(logger('after addResourceToApiGateway'))
+    .then(res => {
+      const params = custom => Object.assign(res, settings, custom);
+      return Promise.all([
+        addMappings(params({httpMethod: 'GET'})),
+        addMappings(params({httpMethod: 'POST'}))
+      ])
+    })
+    .then(logger('after allMethods'))
     .then(result => {
       console.log('API Gateway created', result);
-      return result;
+      return updateSettings({
+        apiGatewayRestApiId: result[0].restApiId,
+        apiGatewayResourceId: result[0].resourceId
+      });
     })
     .catch(err => console.log(err));
 }
@@ -96,5 +200,6 @@ module.exports = {
   createApi,
   addResource,
   getResources,
-  setupApiGateway
+  setupApiGateway,
+  deployApi
 }

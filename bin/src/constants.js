@@ -1,13 +1,15 @@
 const path = require('path');
 const userHome = require('user-home');
 
-const SETTINGS_FILE = '.lambdasyncrc';
+const SETTINGS_FILE = 'lambdasync.json';
 const AWS_USER_DIR = path.join(userHome, '.aws');
 const AWS_CREDENTIALS_PATH = path.join(AWS_USER_DIR, 'credentials');
 const AWS_CONFIG_PATH = path.join(AWS_USER_DIR, 'config');
 const LAMBDASYNC_ROOT = path.join(__dirname, '..', '..');
 const LAMBDASYNC_SRC = path.join(LAMBDASYNC_ROOT, 'bin', 'src');
 const LAMBDASYNC_BIN = path.join(LAMBDASYNC_ROOT, 'node_modules', '.bin');
+const LAMBDASYNC_EXEC_ROLE = 'LambdasyncExecRole';
+const LAMBDASYNC_INVOKE_POLICY = 'LambdasyncInvokePolicy';
 const TARGET_ROOT = process.cwd();
 const PROMPT_CONFIRM_OVERWRITE_FUNCTION = {type: 'confirm', name: 'confirm', message: 'Function already exists, overwrite?'};
 const PROMPT_INPUT_PROFILE_NAME = {type: 'input', name: 'profileName', message: 'Profile name', default: 'lambdasync'};
