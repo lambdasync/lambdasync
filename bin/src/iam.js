@@ -1,8 +1,8 @@
 const path = require('path');
 const aws = require('./aws.js');
-const {awsPromise, logger} = require('./util.js');
+const {awsPromise, logMessage, delay} = require('./util.js');
 const {readFile} = require('./file.js');
-const {LAMBDASYNC_ROOT} = require('./constants.js');
+const {LAMBDASYNC_ROOT, LAMBDASYNC_EXEC_ROLE, LAMBDASYNC_INVOKE_POLICY} = require('./constants.js');
 const {updateSettings} = require('./settings.js');
 
 const invokePolicyPath = path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'invoke-policy.json');
@@ -14,7 +14,7 @@ function createPolicy(settings) {
 
   return readFile(invokePolicyPath, JSON.parse)
     .then(policy => awsPromise(api, 'createPolicy', {
-      PolicyName: 'LambdasyncInvokePolicy',
+      PolicyName: LAMBDASYNC_INVOKE_POLICY,
       PolicyDocument: JSON.stringify(policy)
     }))
     .then(res => updateSettings({
@@ -30,7 +30,8 @@ function attachPolicy(settings) {
   return awsPromise(api, 'attachRolePolicy', {
     RoleName: getRoleNameFromArn(lambdaRole),
     PolicyArn: lambdaPolicy
-  });
+  })
+    .then(() => settings);
 }
 
 function createRole(settings) {
@@ -39,7 +40,7 @@ function createRole(settings) {
 
   return readFile(trustPolicyPath, JSON.parse)
     .then(policy => awsPromise(api, 'createRole', {
-      RoleName: 'LambdasyncExecRole',
+      RoleName: LAMBDASYNC_EXEC_ROLE,
       AssumeRolePolicyDocument: JSON.stringify(policy)
     }))
     .then(res => updateSettings({
@@ -57,7 +58,9 @@ function makeLambdaRole(settings) {
   }
   return createRole(settings)
     .then(createPolicy)
-    .then(attachPolicy);
+    .then(attachPolicy)
+    .then(logMessage('Delaying for 10 seconds so that AWS has time to index the new Role'))
+    .then(delay(10000));
 }
 
 module.exports = {

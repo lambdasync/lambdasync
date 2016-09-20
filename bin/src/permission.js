@@ -17,9 +17,8 @@ function setLambdaPermission(settings) {
     StatementId: 's' + (Math.floor(Math.random() *1000000000)),
     SourceArn: makeLambdaPolicyArn({lambdaArn, apiGatewayId})
   }
-  awsPromise(api, 'addPermission', params)
-    .then(res => console.log('permission result', res))
-    .catch(err => console.log('permission err', err));
+  return awsPromise(api, 'addPermission', params)
+    .then(() => settings);
 }
 
 module.exports = {

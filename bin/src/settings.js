@@ -23,6 +23,7 @@ const settingsFields = [
   'apiGatewayId',
   'apiGatewayName',
   'apiGatewayPath',
+  'apiGatewayUrl',
   'apiGatewayRestApiId',
   'apiGatewayResourceId'
 ];

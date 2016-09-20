@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const {LAMBDASYNC_ROOT} = require('./constants.js');
 const {updateSettings} = require('./settings.js');
-const {awsPromise, chainData, startWith} = require('./util.js');
+const {awsPromise, chainData, startWith, logger} = require('./util.js');
 let AWS;
 let apigateway;
 
@@ -151,10 +151,27 @@ function addMappings({id, restApiId, httpMethod, region, lambdaArn, lambdaRole})
     .then(chainData(addIntegrationResponse))
 }
 
-function setupApiGateway(
-  {name, description, path} = {name:  defaultName(), description: 'lambdasync deployed api', path: 'api'},
-  settings
-) {
+function deployApi({apiGatewayRestApiId}) {
+  const stageName = 'prod';
+  const apiGatewayUrl = `https://${apiGatewayRestApiId}.execute-api.eu-west-1.amazonaws.com/${stageName}`;
+  console.log('apiGatewayUrl', apiGatewayUrl);
+  return awsPromise(apigateway, 'createDeployment', {
+    restApiId: apiGatewayRestApiId,
+    stageName
+  })
+    .then(updateSettings({
+      apiGatewayUrl
+    }));
+}
+
+function setupApiGateway(settings) {
+  if (settings.apiGatewayId) {
+    return settings;
+  }
+  const name = `api-${settings.lambdaName}`;
+  const description = `Lambdasync API for function ${settings.lambdaName}`;
+  const path = 'api';
+
   return createApi({name, description}, settings)
     .then(logger('after createApi'))
     .then(({id, name}) => persistApiGateway({id, name, path}))
@@ -171,11 +188,10 @@ function setupApiGateway(
     .then(logger('after allMethods'))
     .then(result => {
       console.log('API Gateway created', result);
-      updateSettings({
+      return updateSettings({
         apiGatewayRestApiId: result[0].restApiId,
         apiGatewayResourceId: result[0].resourceId
       });
-      return result;
     })
     .catch(err => console.log(err));
 }
@@ -184,5 +200,6 @@ module.exports = {
   createApi,
   addResource,
   getResources,
-  setupApiGateway
+  setupApiGateway,
+  deployApi
 }

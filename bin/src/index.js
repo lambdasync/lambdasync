@@ -3,10 +3,10 @@ const minimist = require('minimist');
 const {getSettings} = require('./settings.js');
 const init = require('./init.js');
 const deploy = require('./deploy.js');
-const {chainData, awsPromise} = require('./util.js');
+const {chainData, awsPromise, logger} = require('./util.js');
 const aws = require('./aws.js');
 const {version} = require('../../package.json');
-const {createApi, addResource, getResources, setupApiGateway} = require('./gateway');
+const {createApi, addResource, getResources, setupApiGateway, deployApi} = require('./gateway');
 const {setLambdaPermission} = require('./permission.js');
 const {callApi} = require('./call-api.js');
 const {makeLambdaRole} = require('./iam.js');
@@ -35,14 +35,9 @@ function handleCommand(command) {
   return getSettings()
     .then(makeLambdaRole)
     .then(chainData(deploy))
-    .then(settings => {
-      console.log('deploy complete', settings);
-      return !settings.apiGatewayId ?
-        setupApiGateway({name: 'testing40', description: 'A test api', path: 'api'}, settings) :
-        null;
-    })
-    .then(getSettings)
-    .then(setLambdaPermission);
+    .then(setupApiGateway)
+    .then(setLambdaPermission)
+    .then(deployApi);
 }
 
 

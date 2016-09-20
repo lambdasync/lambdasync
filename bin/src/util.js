@@ -94,8 +94,20 @@ function makeLambdaPolicyArn({lambdaArn, apiGatewayId}) {
 const logger = label => input => {
   console.log('\n\n');
   console.log(label, input);
+  console.log('\n\n');
   return input;
-}
+};
+
+const logMessage = message => input => {
+  console.log(message);
+  return input;
+};
+
+const delay = time => input => new Promise(resolve => {
+  setTimeout(() => {
+    resolve(input);
+  }, time);
+});
 
 const chainData = fn =>
   (res = {}) => Promise.resolve(fn(res))
@@ -112,6 +124,8 @@ module.exports = {
   stripLambdaVersion,
   chainData,
   startWith,
+  delay,
   makeLambdaPolicyArn,
-  logger
+  logger,
+  logMessage
 };
