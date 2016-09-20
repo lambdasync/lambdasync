@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const {LAMBDASYNC_ROOT} = require('./constants.js');
 const {updateSettings} = require('./settings.js');
-const {awsPromise, chainData, startWith, logger} = require('./util.js');
+const {awsPromise, markdown, chainData, startWith, logger} = require('./util.js');
 let AWS;
 let apigateway;
 
@@ -151,17 +151,27 @@ function addMappings({id, restApiId, httpMethod, region, lambdaArn, lambdaRole})
     .then(chainData(addIntegrationResponse))
 }
 
-function deployApi({apiGatewayRestApiId}) {
+function deployApi(settings) {
+  if (settings.apiGatewayUrl) {
+    return settings;
+  }
+  const {apiGatewayRestApiId, apiGatewayPath} = settings;
   const stageName = 'prod';
-  const apiGatewayUrl = `https://${apiGatewayRestApiId}.execute-api.eu-west-1.amazonaws.com/${stageName}`;
-  console.log('apiGatewayUrl', apiGatewayUrl);
+  const apiGatewayUrl = `https://${apiGatewayRestApiId}.execute-api.eu-west-1.amazonaws.com/${stageName}/${apiGatewayPath}`;
   return awsPromise(apigateway, 'createDeployment', {
     restApiId: apiGatewayRestApiId,
     stageName
   })
-    .then(updateSettings({
+    .then(() => updateSettings({
       apiGatewayUrl
-    }));
+    }))
+    .then(settings => {
+      console.log(markdown({
+        templatePath: 'markdown/deploy-success.md',
+        data: settings
+      }));
+      return settings;
+    });
 }
 
 function setupApiGateway(settings) {
@@ -173,11 +183,8 @@ function setupApiGateway(settings) {
   const path = 'api';
 
   return createApi({name, description}, settings)
-    .then(logger('after createApi'))
     .then(({id, name}) => persistApiGateway({id, name, path}))
-    .then(logger('after persistApiGateway'))
     .then(addResourceToApiGateway)
-    .then(logger('after addResourceToApiGateway'))
     .then(res => {
       const params = custom => Object.assign(res, settings, custom);
       return Promise.all([
@@ -185,9 +192,7 @@ function setupApiGateway(settings) {
         addMappings(params({httpMethod: 'POST'}))
       ])
     })
-    .then(logger('after allMethods'))
     .then(result => {
-      console.log('API Gateway created', result);
       return updateSettings({
         apiGatewayRestApiId: result[0].restApiId,
         apiGatewayResourceId: result[0].resourceId

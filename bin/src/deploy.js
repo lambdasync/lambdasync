@@ -1,10 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const inquirer = require('inquirer');
-const {promisedExec, stripLambdaVersion} = require('./util.js');
+const {promisedExec, stripLambdaVersion, markdown, markdownProperty} = require('./util.js');
 const {getSettings, updateSettings} = require('./settings.js');
 const {
   LAMBDASYNC_BIN,
+  LAMBDASYNC_SRC,
   TARGET_ROOT,
   PROMPT_CONFIRM_OVERWRITE_FUNCTION
 } = require('./constants.js');
@@ -55,12 +56,23 @@ function doDeploy(type) {
 }
 
 function handleSuccess(result) {
-  console.log('Successfully synced function', result);
   promisedExec(LAMBDASYNC_BIN + '/rimraf deploy.zip', targetOptions);
   return updateSettings({
     lambdaArn: stripLambdaVersion(result.FunctionArn),
     lambdaRole: result.Role
-  });
+  })
+    .then(settings => {
+      let template = fs.readFileSync(path.join(LAMBDASYNC_SRC, 'markdown', 'function-success.md'), 'utf8');
+      template += markdownProperty({
+        key: 'apiGatewayUrl',
+        label: 'API URL'
+      }, settings);
+      console.log(markdown({
+        templateString: template,
+        data: settings
+      }));
+      return settings;
+    });
 }
 
 function functionExists(functionName) {

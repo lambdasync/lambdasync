@@ -28,7 +28,9 @@ function init() {
 
 function getProfile() {
   return new Promise((resolve, reject) => {
-    console.log(markdown('markdown/init.md'));
+    console.log(markdown({
+      templatePath: 'markdown/init.md'
+    }));
     inquirer.prompt([PROMPT_INPUT_PROFILE_NAME])
       .then(({profileName}) => {
         getAwsSettings()
@@ -67,7 +69,10 @@ function getSettingsInput(defaults) {
     })
     .then(getAccountId)
     .then(settings => {
-      console.log(markdown('markdown/init-success.md', settings));
+      console.log(markdown({
+        templatePath: 'markdown/init-success.md',
+        data: settings
+      }));
       // console.log('Init complete, creating settings file:\n', JSON.stringify(filterSettings(settings, settingsFields), null, '  '));
     });
 }

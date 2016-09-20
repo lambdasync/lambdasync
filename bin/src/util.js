@@ -25,17 +25,24 @@ function promisedExec(command, options) {
 function mustacheLite(template, data = {}) {
   let content = template;
   Object.keys(data).forEach(key => {
-    console.log('key', key);
     content = content.replace(new RegExp(`{{${key}}}`, 'g'), data[key]);
   });
   return content;
 }
 
-function markdown(relativePath, data) {
-  const template = fs.readFileSync(path.join(LAMBDASYNC_SRC, relativePath), 'utf8');
+function markdown({templateString = null, templatePath = null, data = {}}) {
+  const template = templateString ?
+    templateString : fs.readFileSync(path.join(LAMBDASYNC_SRC, templatePath), 'utf8');
   const content = mustacheLite(template, data);
   const md = marked(content);
   return `\n${md}\n`;
+}
+
+function markdownProperty({key, label}, obj) {
+  if (obj && obj.hasOwnProperty(key)) {
+    return '**' + label + ':** `' + obj[key] + '`\n';
+  }
+  return '';
 }
 
 function addInputDefault(defaults, inputConfig) {
@@ -129,6 +136,7 @@ const startWith = data => Promise.resolve(data);
 module.exports = {
   promisedExec,
   markdown,
+  markdownProperty,
   addInputDefault,
   getProductionModules,
   awsPromise,

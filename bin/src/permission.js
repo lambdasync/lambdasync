@@ -8,6 +8,9 @@ function getGateway(settings) {
 }
 
 function setLambdaPermission(settings) {
+  if (settings.apiGatewayUrl) {
+    return settings;
+  }
   const api = getGateway(settings);
   const {lambdaArn, apiGatewayId} = settings;
   const params = {

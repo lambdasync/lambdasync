@@ -37,7 +37,8 @@ function handleCommand(command) {
     .then(chainData(deploy))
     .then(setupApiGateway)
     .then(setLambdaPermission)
-    .then(deployApi);
+    .then(deployApi)
+    .catch(logger('catch all'))
 }
 
 

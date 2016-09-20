@@ -1,6 +1,6 @@
 const path = require('path');
 const aws = require('./aws.js');
-const {awsPromise, logMessage, delay} = require('./util.js');
+const {awsPromise, logMessage, delay, logger} = require('./util.js');
 const {readFile} = require('./file.js');
 const {LAMBDASYNC_ROOT, LAMBDASYNC_EXEC_ROLE, LAMBDASYNC_INVOKE_POLICY} = require('./constants.js');
 const {updateSettings, getSettings} = require('./settings.js');
@@ -55,8 +55,7 @@ function checkForExistingRoles(settings) {
         lambdaPolicy: res.Policy.Arn
       })),
   ])
-    .then(getSettings)
-    .catch(getSettings);
+    .then(getSettings);
 }
 
 function attachPolicy(settings) {
@@ -90,10 +89,12 @@ function getRoleNameFromArn(arn) {
 }
 
 function makeLambdaRole(settings) {
+  if (settings.lambdaRole) {
+    return settings;
+  }
   return checkForExistingRoles(settings)
     .then(settings => {
       if (settings.lambdaRole) {
-        console.log('role already exists', settings);
         return settings;
       }
       return createRole(settings)
