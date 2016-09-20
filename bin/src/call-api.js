@@ -23,8 +23,8 @@ function callApi(input) {
 
       return awsPromise(api, method, params);
     })
-    .then(res => console.log(res))
-    .catch(err => console.log(err));
+    .then(res => console.log('RESULT:\n\n', res))
+    .catch(err => console.error('ERROR:\n\n', err));
 }
 
 module.exports = {

@@ -22,8 +22,19 @@ function promisedExec(command, options) {
   });
 }
 
-function markdown(relativePath) {
-  const md = marked(fs.readFileSync(path.join(LAMBDASYNC_SRC, relativePath), 'utf8'));
+function mustacheLite(template, data = {}) {
+  let content = template;
+  Object.keys(data).forEach(key => {
+    console.log('key', key);
+    content = content.replace(new RegExp(`{{${key}}}`, 'g'), data[key]);
+  });
+  return content;
+}
+
+function markdown(relativePath, data) {
+  const template = fs.readFileSync(path.join(LAMBDASYNC_SRC, relativePath), 'utf8');
+  const content = mustacheLite(template, data);
+  const md = marked(content);
   return `\n${md}\n`;
 }
 

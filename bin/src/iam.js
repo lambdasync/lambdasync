@@ -3,7 +3,7 @@ const aws = require('./aws.js');
 const {awsPromise, logMessage, delay} = require('./util.js');
 const {readFile} = require('./file.js');
 const {LAMBDASYNC_ROOT, LAMBDASYNC_EXEC_ROLE, LAMBDASYNC_INVOKE_POLICY} = require('./constants.js');
-const {updateSettings} = require('./settings.js');
+const {updateSettings, getSettings} = require('./settings.js');
 
 const invokePolicyPath = path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'invoke-policy.json');
 const trustPolicyPath = path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'trust-policy.json');
@@ -20,6 +20,43 @@ function createPolicy(settings) {
     .then(res => updateSettings({
       lambdaPolicy: res.Policy.Arn
     }));
+}
+
+function pickAccountIdFromArn(arn) {
+  const re = /:([0-9]*?):user/;
+  const match = re.exec(arn);
+  return match[1];
+}
+
+function getAccountId(settings) {
+  const AWS = aws(settings);
+  const api = new AWS.IAM();
+
+  return awsPromise(api, 'getUser')
+    .then(res => updateSettings({
+      accountId: pickAccountIdFromArn(res.User.Arn)
+    }));
+}
+
+function checkForExistingRoles(settings) {
+  const AWS = aws(settings);
+  const api = new AWS.IAM();
+  return Promise.all([
+    awsPromise(api, 'getRole', {
+      RoleName: LAMBDASYNC_EXEC_ROLE
+    })
+      .then(res => updateSettings({
+        lambdaRole: res.Role.Arn
+      })),
+    awsPromise(api, 'getPolicy', {
+      PolicyArn: `arn:aws:iam::${settings.accountId}:policy/${LAMBDASYNC_INVOKE_POLICY}`
+    })
+      .then(res => updateSettings({
+        lambdaPolicy: res.Policy.Arn
+      })),
+  ])
+    .then(getSettings)
+    .catch(getSettings);
 }
 
 function attachPolicy(settings) {
@@ -53,118 +90,21 @@ function getRoleNameFromArn(arn) {
 }
 
 function makeLambdaRole(settings) {
-  if (settings.lambdaRole) {
-    return settings;
-  }
-  return createRole(settings)
-    .then(createPolicy)
-    .then(attachPolicy)
-    .then(logMessage('Delaying for 10 seconds so that AWS has time to index the new Role'))
-    .then(delay(10000));
+  return checkForExistingRoles(settings)
+    .then(settings => {
+      if (settings.lambdaRole) {
+        console.log('role already exists', settings);
+        return settings;
+      }
+      return createRole(settings)
+        .then(createPolicy)
+        .then(attachPolicy)
+        .then(logMessage('Delaying for 10 seconds so that AWS has time to index the new Role'))
+        .then(delay(10000));
+    });
 }
 
 module.exports = {
+  getAccountId,
   makeLambdaRole
 };
-
-/*
-
-IAM.createPolicy
-
-{
-    PolicyName: 'LambdasyncAPIGatewayLambdaInvokePolicy',
-    PolicyDocument: '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Resource":["*"],"Action":["lambda:InvokeFunction"]}]}'
-}
-
-{
-    ResponseMetadata: {
-        RequestId: 'ab3c03ab-7e71-11e6-9c9b-d78056091cfa'
-    },
-    Policy: {
-        PolicyName: 'LambdasyncAPIGatewayLambdaInvokePolicy',
-        PolicyId: 'ANPAJMPDJDZES7KBPGGUC',
-        Arn: 'arn:aws:iam::598075967016:policy/LambdasyncAPIGatewayLambdaInvokePolicy',
-        Path: '/',
-        DefaultVersionId: 'v1',
-        AttachmentCount: 0,
-        IsAttachable: true,
-        CreateDate: 2016 - 09 - 19 T14: 02: 15.093 Z,
-        UpdateDate: 2016 - 09 - 19 T14: 02: 15.093 Z
-    }
-}
-
-
-
-
-
-IAM.createRole
-
-{
-    RoleName: 'LambdasyncApiRole',
-    AssumeRolePolicyDocument: '{"Version":"2012-10-17","Statement":[{"Sid":"","Effect":"Allow","Principal":{"Service":"apigateway.amazonaws.com"},"Action":"sts:AssumeRole"}]}'
-}
-
-{
-    ResponseMetadata: {
-        RequestId: '9bee5cef-7e72-11e6-9a3a-bf7b1425e59f'
-    },
-    Role: {
-        Path: '/',
-        RoleName: 'LambdasyncApiRole',
-        RoleId: 'AROAIACNZ55UYIPN46X6Y',
-        Arn: 'arn:aws:iam::598075967016:role/LambdasyncApiRole',
-        CreateDate: 2016 - 09 - 19 T14: 08: 58.950 Z,
-        AssumeRolePolicyDocument: '%7B%22Version%22%3A%222012-10-17%22%2C%22Statement%22%3A%5B%7B%22Sid%22%3A%22%22%2C%22Effect%22%3A%22Allow%22%2C%22Principal%22%3A%7B%22Service%22%3A%22apigateway.amazonaws.com%22%7D%2C%22Action%22%3A%22sts%3AAssumeRole%22%7D%5D%7D'
-    }
-}
-
-
-
-
-
-IAM.createPolicy
-
-{
-    PolicyName: 'LambdasyncAPIGatewayLambdaExecPolicy',
-    PolicyDocument: '{"Version":"2012-10-17","Statement":[{"Action":["logs:*"],"Effect":"Allow","Resource":"arn:aws:logs:*:*:*"}]}  '
-}
-
-{
-    ResponseMetadata: {
-        RequestId: 'aec5f0f3-7e75-11e6-95e4-e18e5bcabb34'
-    },
-    Policy: {
-        PolicyName: 'LambdasyncAPIGatewayLambdaExecPolicy',
-        PolicyId: 'ANPAJD2EQQWD25CBMAXWU',
-        Arn: 'arn:aws:iam::598075967016:policy/LambdasyncAPIGatewayLambdaExecPolicy',
-        Path: '/',
-        DefaultVersionId: 'v1',
-        AttachmentCount: 0,
-        IsAttachable: true,
-        CreateDate: 2016 - 09 - 19 T14: 30: 59.031 Z,
-        UpdateDate: 2016 - 09 - 19 T14: 30: 59.031 Z
-    }
-}
-
-
-IAM.createRole
-
-{
-    RoleName: 'LambdasyncExecApiRole',
-    AssumeRolePolicyDocument: '{"Version":"2012-10-17","Statement":[{"Sid":"","Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"}]}'
-}
-
-{
-    ResponseMetadata: {
-        RequestId: '7e56bbdb-7e77-11e6-8e5f-8be775b3b69a'
-    },
-    Role: {
-        Path: '/',
-        RoleName: 'LambdasyncExecApiRole',
-        RoleId: 'AROAJBMGOYSUGOAHAOABA',
-        Arn: 'arn:aws:iam::598075967016:role/LambdasyncExecApiRole',
-        CreateDate: 2016 - 09 - 19 T14: 43: 56.748 Z,
-        AssumeRolePolicyDocument: '%7B%22Version%22%3A%222012-10-17%22%2C%22Statement%22%3A%5B%7B%22Sid%22%3A%22%22%2C%22Effect%22%3A%22Allow%22%2C%22Principal%22%3A%7B%22Service%22%3A%22lambda.amazonaws.com%22%7D%2C%22Action%22%3A%22sts%3AAssumeRole%22%7D%5D%7D'
-    }
-}
-*/

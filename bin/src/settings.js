@@ -14,6 +14,7 @@ const settingsInput = [
 ];
 
 const settingsFields = [
+  'accountId',
   'profileName',
   'lambdaName',
   'lambdaArn',
@@ -47,7 +48,7 @@ function updateSettings(newFields) {
     .then(settings => {
       const newSettings = Object.assign({}, settings, newFields);
       return putSettings(newSettings)
-        .then(() => newSettings);
+        .then(getSettings);
     });
 }
 

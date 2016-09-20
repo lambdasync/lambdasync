@@ -4,12 +4,14 @@ const ini = require('ini');
 
 const {writeFile} = require('./file.js');
 const {markdown, addInputDefault} = require('./util.js');
+const {getAccountId} = require('./iam.js');
 const {AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH, LAMBDASYNC_ROOT} = require('./constants.js');
 const {
   settingsFields,
   updateSettings,
   getAwsSettings,
-  filterSettings
+  filterSettings,
+  getSettings
 } = require('./settings.js');
 const {
   PROMPT_INPUT_PROFILE_NAME,
@@ -26,7 +28,7 @@ function init() {
 
 function getProfile() {
   return new Promise((resolve, reject) => {
-    console.log(markdown('init.md'));
+    console.log(markdown('markdown/init.md'));
     inquirer.prompt([PROMPT_INPUT_PROFILE_NAME])
       .then(({profileName}) => {
         getAwsSettings()
@@ -56,11 +58,17 @@ function getSettingsInput(defaults) {
     addInputDefault(defaults, PROMPT_CHOICE_REGION)
   ])
     .then(function (result) {
-      // Add profileName to result
       result.profileName = defaults.profileName;
-      console.log('Init complete, creating setting file:\n', JSON.stringify(filterSettings(result, settingsFields), null, '  '));
-      updateSettings(result);
-      persistAwsConfig(result);
+      return Promise.all([
+        updateSettings(result),
+        persistAwsConfig(result),
+      ])
+        .then(getSettings);
+    })
+    .then(getAccountId)
+    .then(settings => {
+      console.log(markdown('markdown/init-success.md', settings));
+      // console.log('Init complete, creating settings file:\n', JSON.stringify(filterSettings(settings, settingsFields), null, '  '));
     });
 }
 
