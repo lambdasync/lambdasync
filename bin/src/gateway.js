@@ -187,15 +187,17 @@ function setupApiGateway(settings) {
     .then(addResourceToApiGateway)
     .then(res => {
       const params = custom => Object.assign(res, settings, custom);
-      return Promise.all([
-        addMappings(params({httpMethod: 'GET'})),
-        addMappings(params({httpMethod: 'POST'}))
-      ])
+      return addMappings(params({httpMethod: 'GET'}))
+        .then(() => addMappings(params({httpMethod: 'POST'})))
+        .then(() => addMappings(params({httpMethod: 'PUT'})))
+        .then(() => addMappings(params({httpMethod: 'DELETE'})))
+        .then(() => addMappings(params({httpMethod: 'HEAD'})))
+        .then(() => addMappings(params({httpMethod: 'PATCH'})));
     })
     .then(result => {
       return updateSettings({
-        apiGatewayRestApiId: result[0].restApiId,
-        apiGatewayResourceId: result[0].resourceId
+        apiGatewayRestApiId: result.restApiId,
+        apiGatewayResourceId: result.resourceId
       });
     })
     .catch(err => console.log(err));
