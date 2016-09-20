@@ -91,6 +91,12 @@ function makeLambdaPolicyArn({lambdaArn, apiGatewayId}) {
     .concat('/*/GET/api')
 }
 
+const logger = label => input => {
+  console.log('\n\n');
+  console.log(label, input);
+  return input;
+}
+
 const chainData = fn =>
   (res = {}) => Promise.resolve(fn(res))
     .then(out => Object.assign(res, out));
@@ -106,5 +112,6 @@ module.exports = {
   stripLambdaVersion,
   chainData,
   startWith,
-  makeLambdaPolicyArn
+  makeLambdaPolicyArn,
+  logger
 };

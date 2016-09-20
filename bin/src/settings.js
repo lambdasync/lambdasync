@@ -18,6 +18,7 @@ const settingsFields = [
   'lambdaName',
   'lambdaArn',
   'lambdaRole',
+  'lambdaPolicy',
   'region',
   'apiGatewayId',
   'apiGatewayName',

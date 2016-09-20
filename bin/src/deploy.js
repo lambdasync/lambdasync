@@ -107,7 +107,7 @@ function createFunction() {
       },
       FunctionName: settings.lambdaName,
       Handler: 'index.handler',
-      Role: 'arn:aws:iam::598075967016:role/foodographer-api-dev-r-IamRoleLambda-KPQ9UITBWAJ6', // lambda_basic_execution
+      Role: settings.lambdaRole,
       Runtime: 'nodejs4.3', /* required */
       Description: description, // package.json description
       MemorySize: 128, // default

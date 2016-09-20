@@ -151,12 +151,6 @@ function addMappings({id, restApiId, httpMethod, region, lambdaArn, lambdaRole})
     .then(chainData(addIntegrationResponse))
 }
 
-const logger = label => input => {
-  console.log('\n\n');
-  console.log(label, input);
-  return input;
-}
-
 function setupApiGateway(
   {name, description, path} = {name:  defaultName(), description: 'lambdasync deployed api', path: 'api'},
   settings

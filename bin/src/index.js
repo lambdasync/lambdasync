@@ -9,6 +9,7 @@ const {version} = require('../../package.json');
 const {createApi, addResource, getResources, setupApiGateway} = require('./gateway');
 const {setLambdaPermission} = require('./permission.js');
 const {callApi} = require('./call-api.js');
+const {makeLambdaRole} = require('./iam.js');
 const command = minimist(process.argv.slice(2), {
   alias: {
     v: 'version',
@@ -32,6 +33,7 @@ function handleCommand(command) {
   }
 
   return getSettings()
+    .then(makeLambdaRole)
     .then(chainData(deploy))
     .then(settings => {
       console.log('deploy complete', settings);
