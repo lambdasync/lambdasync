@@ -9,6 +9,8 @@ A tool to scaffold, deploy and update [AWS Lambda](https://aws.amazon.com/lambda
   `npm install lambdasync`
 
 ## Set up
+To use Lambdasync you will need an AWS Account, and credentials, check out the [official docs on how to get your credentials](http://goo.gl/aMbXsg) before you start.
+
 Run `lambdasync init` in the root folder of your project. It will prompt you for:
 ```
 'profileName', // Name of local aws-cli profile to save to, default lambdasync
@@ -17,7 +19,6 @@ Run `lambdasync init` in the root folder of your project. It will prompt you for
 'secretKey', // AWS Secret Access Key  wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 'region', // us-east-1
 ```
-
 Lambdasync will save `profileName`, `lambdaName` and `region` locally in your project directory.
 
 The `profileName` is used as an alias for your credentials, that are saved in the `~/.aws` directory in a format compatible with official [AWS CLI](https://aws.amazon.com/cli/) profiles. That means no sensitive information is saved in the repository.
