@@ -22,7 +22,18 @@ const {
 } = require('./constants.js');
 
 function init() {
-  getProfile()
+  getSettings()
+    .then(settings => {
+      if (settings.profileName) {
+        console.log(markdown({
+          templatePath: 'markdown/init-twice.md'
+        }));
+        throw('Init already run');
+      } else {
+        return;
+      }
+    })
+    .then(getProfile)
     .then(getSettingsInput);
 }
 
