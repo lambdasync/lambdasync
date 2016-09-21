@@ -22,7 +22,7 @@ const {
 } = require('./constants.js');
 
 function init() {
-  getSettings()
+  return getSettings()
     .then(settings => {
       if (settings.profileName) {
         console.log(markdown({
@@ -64,7 +64,7 @@ function getProfile() {
 }
 
 function getSettingsInput(defaults) {
-  inquirer.prompt([
+  return inquirer.prompt([
     PROMPT_INPUT_FUNCTION_NAME,
     addInputDefault(defaults, PROMPT_INPUT_ACCESS_KEY),
     addInputDefault(defaults, PROMPT_INPUT_SECRET_KEY),
@@ -84,7 +84,7 @@ function getSettingsInput(defaults) {
         templatePath: 'markdown/init-success.md',
         data: settings
       }));
-      // console.log('Init complete, creating settings file:\n', JSON.stringify(filterSettings(settings, settingsFields), null, '  '));
+      return settings;
     });
 }
 
@@ -130,4 +130,12 @@ function persistAwsConfig(conf) {
     });
 }
 
-module.exports = init;
+function maybeInit(settings) {
+  if (settings.lambdaName && settings.profileName && settings.accountId) {
+    return settings;
+  }
+
+  return init();
+}
+
+module.exports = maybeInit;

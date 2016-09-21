@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const minimist = require('minimist');
 const {getSettings} = require('./settings.js');
-const init = require('./init.js');
+const maybeInit = require('./init.js');
 const deploy = require('./deploy.js');
 const {chainData, awsPromise, logger} = require('./util.js');
 const aws = require('./aws.js');
@@ -18,10 +18,6 @@ const command = minimist(process.argv.slice(2), {
 });
 
 function handleCommand(command) {
-  if (command._[0] === 'init') {
-    return init();
-  }
-
   if (command.call) {
     return callApi(command);
     return;
@@ -33,12 +29,13 @@ function handleCommand(command) {
   }
 
   return getSettings()
+    .then(maybeInit)
     .then(makeLambdaRole)
     .then(chainData(deploy))
     .then(setupApiGateway)
     .then(setLambdaPermission)
     .then(deployApi)
-    .catch(logger('catch all'))
+    // .catch(logger('catch all'))
 }
 
 

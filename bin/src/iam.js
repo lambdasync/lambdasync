@@ -89,7 +89,7 @@ function getRoleNameFromArn(arn) {
 }
 
 function makeLambdaRole(settings) {
-  if (settings.lambdaRole) {
+  if (settings && settings.lambdaRole) {
     return settings;
   }
   return checkForExistingRoles(settings)
