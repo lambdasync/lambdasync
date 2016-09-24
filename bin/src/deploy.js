@@ -1,8 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const inquirer = require('inquirer');
+const {description} = require('../../package.json');
 const {promisedExec, stripLambdaVersion, markdown, markdownProperty} = require('./util.js');
-const {getSettings, updateSettings} = require('./settings.js');
+const {updateSettings} = require('./settings.js');
 const {
   LAMBDASYNC_BIN,
   LAMBDASYNC_SRC,
@@ -10,7 +11,6 @@ const {
   PROMPT_CONFIRM_OVERWRITE_FUNCTION
 } = require('./constants.js');
 const aws = require('./aws.js');
-const {description} = require('../../package.json');
 
 const targetOptions = {cwd: TARGET_ROOT};
 let lambda;
@@ -36,9 +36,8 @@ function deploy(deploySettings) {
         .then(function (result) {
           if (result.confirm) {
             return doDeploy('update');
-          } else {
-            console.log('You answered no, aborting deploy');
           }
+          console.log('You answered no, aborting deploy');
         });
     });
 }
@@ -80,7 +79,7 @@ function functionExists(functionName) {
     const params = {
       FunctionName: functionName
     };
-    lambda.getFunction(params, (err, data) => {
+    lambda.getFunction(params, err => {
       if (err) {
         if (err.toString().includes('ResourceNotFoundException')) {
           return resolve(false);
@@ -125,14 +124,13 @@ function createFunction() {
       MemorySize: 128, // default
       Publish: true,
       Timeout: 3
-    }, function(err, data) {
+    }, function cb(err, data) {
       if (err) {
         return reject(err);
       }
       return resolve(data);
     });
   });
-
 }
 
 module.exports = deploy;

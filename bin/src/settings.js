@@ -1,9 +1,9 @@
 const path = require('path');
 const ini = require('ini');
+
 const {SETTINGS_FILE, AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH} = require('./constants.js');
 const {readFile, writeFile} = require('./file.js');
 const {jsonStringify} = require('./transform.js');
-
 
 const settingsInput = [
   'profileName', // Name of local aws-cli profile, default lambdasync
@@ -33,7 +33,7 @@ const settingsPath = path.join(process.cwd(), SETTINGS_FILE);
 
 function getSettings() {
   return readFile(settingsPath, JSON.parse)
-    .catch(() => ({}))
+    .catch(() => ({}));
 }
 
 function putSettings(settings) {
@@ -57,14 +57,16 @@ function getAwsSettings() {
     readFile(AWS_CREDENTIALS_PATH, ini.parse),
     readFile(AWS_CONFIG_PATH, ini.parse)
   ])
-    .catch(() => [{}, {}])
+    .catch(() => [{}, {}]);
 }
-
 
 function filterSettings(obj, fields) {
   return Object.keys(obj)
     .filter(key => fields.indexOf(key) !== -1)
-    .reduce((res, key) => (res[key] = obj[key], res), {});
+    .reduce((res, key) => {
+      res[key] = obj[key];
+      return res;
+    }, {});
 }
 
 module.exports = {

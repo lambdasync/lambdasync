@@ -1,19 +1,17 @@
-const fs = require('fs');
 const inquirer = require('inquirer');
 const ini = require('ini');
 
 const {writeFile} = require('./file.js');
 const {markdown, addInputDefault} = require('./util.js');
 const {getAccountId} = require('./iam.js');
-const {AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH, LAMBDASYNC_ROOT} = require('./constants.js');
+const {AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH} = require('./constants.js');
 const {
-  settingsFields,
   updateSettings,
   getAwsSettings,
-  filterSettings,
   getSettings
 } = require('./settings.js');
 const {
+  EXCEPTIONS,
   PROMPT_INPUT_PROFILE_NAME,
   PROMPT_INPUT_FUNCTION_NAME,
   PROMPT_INPUT_ACCESS_KEY,
@@ -28,7 +26,7 @@ function init() {
         console.log(markdown({
           templatePath: 'markdown/init-twice.md'
         }));
-        throw('Init already run');
+        throw EXCEPTIONS.INIT_ALREADY_RUN;
       } else {
         return;
       }
@@ -49,15 +47,15 @@ function getProfile() {
             if (credentials[profileName] && config['profile ' + profileName]) {
               resolve({
                 profileName: profileName,
-                accessKey: credentials[profileName].aws_access_key_id,
-                secretKey: credentials[profileName].aws_secret_access_key,
+                accessKey: credentials[profileName].aws_access_key_id, // eslint-disable-line camelcase
+                secretKey: credentials[profileName].aws_secret_access_key, // eslint-disable-line camelcase
                 region: config['profile ' + profileName].region
               });
             } else {
               resolve({});
             }
           })
-          .catch(err => resolve({}));
+          .catch(() => resolve({})); // eslint-disable-line handle-callback-err
       })
       .catch(err => reject(err));
   });
@@ -74,7 +72,7 @@ function getSettingsInput(defaults) {
       result.profileName = defaults.profileName;
       return Promise.all([
         updateSettings(result),
-        persistAwsConfig(result),
+        persistAwsConfig(result)
       ])
         .then(getSettings);
     })
@@ -94,8 +92,8 @@ function persistAwsConfig(conf) {
       const persistCredentials = () => {
         const newCredentials = Object.assign({}, credentials);
         newCredentials[conf.profileName] = {
-          aws_access_key_id: conf.accessKey,
-          aws_secret_access_key: conf.secretKey
+          aws_access_key_id: conf.accessKey, // eslint-disable-line camelcase
+          aws_secret_access_key: conf.secretKey // eslint-disable-line camelcase
         };
         writeFile(AWS_CREDENTIALS_PATH, newCredentials, ini.stringify);
       };
@@ -111,22 +109,8 @@ function persistAwsConfig(conf) {
           });
       };
 
-      if (credentials[conf.profileName]) {
-        const rl = initRl();
-        rl.question('Profile ' + conf.profileName + ' already exists, overwrite?: ', answer => {
-          if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
-            persistCredentials();
-            persistConfig();
-          } else {
-            persistCredentials();
-            persistConfig();
-          }
-          rl.close();
-        });
-      } else {
-        persistCredentials();
-        persistConfig();
-      }
+      persistCredentials();
+      persistConfig();
     });
 }
 

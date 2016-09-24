@@ -1,6 +1,12 @@
 const path = require('path');
 const userHome = require('user-home');
 
+function exception(name, message) {
+  return {name, message};
+}
+const EXCEPTIONS = {
+  INIT_ALREADY_RUN: exception('INIT_ALREADY_RUN', 'Init already run')
+};
 const SETTINGS_FILE = 'lambdasync.json';
 const AWS_USER_DIR = path.join(userHome, '.aws');
 const AWS_CREDENTIALS_PATH = path.join(AWS_USER_DIR, 'credentials');
@@ -27,6 +33,7 @@ const PROMPT_CHOICE_REGION = {type: 'list', name: 'region', message: 'Region', c
 ]};
 
 module.exports = {
+  EXCEPTIONS,
   SETTINGS_FILE,
   AWS_USER_DIR,
   AWS_CREDENTIALS_PATH,

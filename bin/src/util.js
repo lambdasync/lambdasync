@@ -10,13 +10,12 @@ marked.setOptions({
   renderer: new TerminalRenderer()
 });
 
-function promisedExec(command, options) {
+function promisedExec(command, options) { // eslint-disable-line no-unused-vars
   return new Promise((resolve, reject) => {
-    cp.exec(command, options = {}, (err, stdout, stderr) => {
+    cp.exec(command, options = {}, (err, stdout) => {
       if (err) {
         return reject(err);
       }
-
       resolve(stdout);
     });
   });
@@ -39,7 +38,7 @@ function markdown({templateString = null, templatePath = null, data = {}}) {
 }
 
 function markdownProperty({key, label}, obj) {
-  if (obj && obj.hasOwnProperty(key)) {
+  if (obj && Object.prototype.hasOwnProperty.call(obj, key)) {
     return '**' + label + ':** `' + obj[key] + '`\n';
   }
   return '';
@@ -54,7 +53,7 @@ function addInputDefault(defaults, inputConfig) {
 
 function getProductionDeps() {
   return new Promise((resolve, reject) => {
-    cp.exec('npm ls --json --production', (err, stdout, stderr) => {
+    cp.exec('npm ls --json --production', (err, stdout) => { // eslint-disable-line handle-callback-err
       try {
         resolve(JSON.parse(stdout).dependencies);
       } catch (err) {
@@ -66,18 +65,18 @@ function getProductionDeps() {
 
 function flattenDeps(deps = {}) {
   return Object.keys(deps).reduce((acc, moduleName) => {
-    return [
-      ...acc,
-      moduleName,
-      ...flattenDeps(deps[moduleName].dependencies)
-    ];
-  }, []);
+    return [
+      ...acc,
+      moduleName,
+      ...flattenDeps(deps[moduleName].dependencies)
+    ];
+  }, []);
 }
 
 function removeDuplicates(flatDeps) {
   return flatDeps.reduce((acc, moduleName) => {
     return acc.includes(moduleName) ?
-      acc : [ ...acc, moduleName ];
+      acc : [...acc, moduleName];
   }, []);
 }
 
@@ -89,7 +88,7 @@ function getProductionModules() {
 
 function awsPromise(api, method, params) {
   return new Promise((resolve, reject) => {
-    api[method](params, function(err, data) {
+    api[method](params, function cb(err, data) {
       if (err) {
         return reject(err);
       }
@@ -106,7 +105,7 @@ function makeLambdaPolicyArn({lambdaArn, apiGatewayId}) {
   return lambdaArn
     .replace('arn:aws:lambda', 'arn:aws:execute-api')
     .replace(/function.*?$/g, apiGatewayId)
-    .concat('/*/GET/api')
+    .concat('/*/GET/api');
 }
 
 const logger = label => input => {

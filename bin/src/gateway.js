@@ -1,9 +1,11 @@
-const aws = require('./aws.js');
 const fs = require('fs');
 const path = require('path');
+
+const aws = require('./aws.js');
 const {LAMBDASYNC_ROOT} = require('./constants.js');
 const {updateSettings} = require('./settings.js');
-const {awsPromise, markdown, chainData, startWith, logger} = require('./util.js');
+const {awsPromise, markdown, chainData, startWith} = require('./util.js');
+
 let AWS;
 let apigateway;
 
@@ -20,45 +22,23 @@ function getGateway(settings) {
   return apigateway;
 }
 
-
-function createApi({name, description} = {name:  defaultName(), description: 'lambdasync deployed api'}, settings) {
+function createApi({name, description} = {name: defaultName(), description: 'lambdasync deployed api'}, settings) {
   apigateway = getGateway(settings);
 
-  return new Promise((resolve, reject) => {
-    apigateway.createRestApi({name, description}, function(err, data) {
-      if (err) {
-        reject(err);
-      }
-      resolve(data);
-    });
-  });
+  return awsPromise(apigateway, 'createRestApi', {name, description});
 }
 
 function addResource({parentId, restApiId, pathPart} = {}, settings) {
   apigateway = getGateway(settings);
-  return new Promise((resolve, reject) => {
-    apigateway.createResource({parentId, restApiId, pathPart}, function(err, data) {
-      if (err) {
-        reject(err);
-      }
-      resolve(data);
-    });
-  });
+  return awsPromise(apigateway, 'createResource', {parentId, restApiId, pathPart});
 }
 
 function getResources({restApiId} = {}, settings) {
   apigateway = getGateway(settings);
-  return new Promise((resolve, reject) => {
-    apigateway.getResources({restApiId}, function(err, data) {
-      if (err) {
-        reject(err);
-      }
-      resolve(data);
-    });
-  });
+  return awsPromise(apigateway, 'getResources', {restApiId});
 }
 
-function getRootResource({id} = {}, settings) {
+function getRootResource({id} = {}) {
   return getResources({restApiId: id})
     .then(({items}) => {
       const rootResource = items && items
@@ -71,7 +51,7 @@ function getRootResource({id} = {}, settings) {
 function addResourceToApiGateway({apiGatewayId, apiGatewayPath} = {}) {
   const restApiId = apiGatewayId;
   return getRootResource({id: apiGatewayId})
-    .then((id) => {
+    .then(id => {
       return startWith({
         restApiId,
         parentId: id,
@@ -108,7 +88,7 @@ function addMethodResponse({restApiId, resourceId, httpMethod}) {
   });
 }
 
-function addIntegration({restApiId, resourceId, httpMethod, region, lambdaArn, lambdaRole}) {
+function addIntegration({restApiId, resourceId, httpMethod, region, lambdaArn}) {
   const uri = `arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations`;
   return awsPromise(apigateway, 'putIntegration', {
     restApiId,
@@ -117,7 +97,6 @@ function addIntegration({restApiId, resourceId, httpMethod, region, lambdaArn, l
     integrationHttpMethod: 'POST',
     type: 'AWS',
     uri,
-    // credentials: lambdaRole,
     requestTemplates: {
       'application/json': fs.readFileSync(path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'integration-request.vm'), 'utf8')
     },
@@ -136,18 +115,18 @@ function addIntegrationResponse({restApiId, resourceId, httpMethod}) {
 
 function addMappings({id, restApiId, httpMethod, region, lambdaArn, lambdaRole}) {
   return startWith({
-      restApiId,
-      resourceId: id,
-      httpMethod,
-      region,
-      lambdaArn,
-      lambdaRole
+    restApiId,
+    resourceId: id,
+    httpMethod,
+    region,
+    lambdaArn,
+    lambdaRole
   })
     .then(chainData(addMethod))
     .then(chainData(addMethodResponse))
     .then(chainData(addIntegration))
     .then(chainData(() => ({httpMethod})))
-    .then(chainData(addIntegrationResponse))
+    .then(chainData(addIntegrationResponse));
 }
 
 function deployApi(settings) {
@@ -208,4 +187,4 @@ module.exports = {
   getResources,
   setupApiGateway,
   deployApi
-}
+};

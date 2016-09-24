@@ -17,9 +17,9 @@ function setLambdaPermission(settings) {
     Action: 'lambda:InvokeFunction',
     FunctionName: lambdaArn,
     Principal: 'apigateway.amazonaws.com',
-    StatementId: 's' + (Math.floor(Math.random() *1000000000)),
+    StatementId: 's' + (Math.floor(Math.random() * 1000000000)),
     SourceArn: makeLambdaPolicyArn({lambdaArn, apiGatewayId})
-  }
+  };
   return awsPromise(api, 'addPermission', params)
     .then(() => settings);
 }
