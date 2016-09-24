@@ -82,8 +82,8 @@ function addResourceToApiGateway({id, path} = {}, settings) {
 }
 
 function persistApiGateway({id, name, path} = {}) {
-  updateSettings({apiGatewayId: id, apiGatewayName: name, apiGatewayPath: path});
-  return {id, name, path};
+  return updateSettings({apiGatewayId: id, apiGatewayName: name, apiGatewayPath: path})
+    .then(() => {id, name, path});
 }
 
 function addMethod({restApiId, resourceId, httpMethod}) {

@@ -41,20 +41,18 @@ function getAccountId(settings) {
 function checkForExistingRoles(settings) {
   const AWS = aws(settings);
   const api = new AWS.IAM();
-  return Promise.all([
-    awsPromise(api, 'getRole', {
-      RoleName: LAMBDASYNC_EXEC_ROLE
-    })
-      .then(res => updateSettings({
-        lambdaRole: res.Role.Arn
-      })),
-    awsPromise(api, 'getPolicy', {
+  return awsPromise(api, 'getRole', {
+    RoleName: LAMBDASYNC_EXEC_ROLE
+  })
+    .then(res => updateSettings({
+      lambdaRole: res.Role.Arn
+    }))
+    .then(() => awsPromise(api, 'getPolicy', {
       PolicyArn: `arn:aws:iam::${settings.accountId}:policy/${LAMBDASYNC_INVOKE_POLICY}`
-    })
-      .then(res => updateSettings({
-        lambdaPolicy: res.Policy.Arn
-      })),
-  ])
+    }))
+    .then(res => updateSettings({
+      lambdaPolicy: res.Policy.Arn
+    }))
     .then(getSettings);
 }
 
