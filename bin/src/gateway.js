@@ -68,22 +68,21 @@ function getRootResource({id} = {}, settings) {
     });
 }
 
-function addResourceToApiGateway({id, path} = {}, settings) {
-  const restApiId = id;
-  return getRootResource({id: restApiId})
+function addResourceToApiGateway({apiGatewayId, apiGatewayPath} = {}) {
+  const restApiId = apiGatewayId;
+  return getRootResource({id: apiGatewayId})
     .then((id) => {
       return startWith({
         restApiId,
         parentId: id,
-        pathPart: path
+        pathPart: apiGatewayPath
       })
         .then(chainData(addResource));
     });
 }
 
 function persistApiGateway({id, name, path} = {}) {
-  return updateSettings({apiGatewayId: id, apiGatewayName: name, apiGatewayPath: path})
-    .then(() => {id, name, path});
+  return updateSettings({apiGatewayId: id, apiGatewayName: name, apiGatewayPath: path});
 }
 
 function addMethod({restApiId, resourceId, httpMethod}) {

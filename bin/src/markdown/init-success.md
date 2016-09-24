@@ -5,4 +5,6 @@
 **Function name:** `{{lambdaName}}`
 **Region:** `{{region}}`
 
-Lambdasync was successfully set up. To deploy/update your function simply run `lambdasync`.
+Lambdasync was successfully set up.
+
+Deploying your function...
