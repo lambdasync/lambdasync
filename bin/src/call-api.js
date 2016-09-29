@@ -16,7 +16,14 @@ function callApi(input) {
     .then(settings => {
       const api = getApi(settings, apiName);
       const params = input._.reduce((acc, current) => {
-        const [key, valueKey] = current.split('=');
+        let [key, valueKey] = current.split('=');
+        // If string starts with a [ or {, JSON.parse it
+        if (valueKey[0] === '[' || valueKey[0] === '{') {
+          try {
+            valueKey = JSON.parse(valueKey);
+          } catch (e) {}
+        }
+
         acc[key] = settings[valueKey] || valueKey;
         return acc;
       }, {});
