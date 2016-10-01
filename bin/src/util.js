@@ -115,7 +115,7 @@ function parseCommandArgs(args = [], settings = {}) {
     if (valueKey[0] === '[' || valueKey[0] === '{') {
       try {
         valueKey = JSON.parse(valueKey);
-      } catch (e) {}
+      } catch (err) {}
     }
 
     acc[key] = settings[valueKey] || valueKey;

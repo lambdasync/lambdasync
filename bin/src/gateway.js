@@ -7,7 +7,6 @@ const {updateSettings, getSettings} = require('./settings.js');
 const {
   awsPromise,
   markdown,
-  markdownProperty,
   chainData,
   startWith
 } = require('./util.js');
