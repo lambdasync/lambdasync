@@ -4,7 +4,7 @@ A tool to scaffold, deploy and update [AWS Lambda](https://aws.amazon.com/lambda
 
 ## Installation
 
-`npm install lambdasync`
+`npm install lambdasync -g`
 
 
 ## Add a handler function
@@ -41,6 +41,18 @@ Next, your project folder will be zipped and deployed to lambda, if this is the 
 
 When the deploy is done, you will get a URL where you can call your API.
 
+## Adding secrets
+`lambdasync secret DB_HOST=127.0.0.1`
+
+Secrets can be stored to avoid putting sensitive data in your source code. Secrets are stored as API Gateway stage variables and can be accessed through the incoming `event` object, under `stageVariables`.
+
+```
+exports.handler = function(event, context, callback) {
+  const {DB_HOST} = event.stageVariables;
+  // ... do something with DB_HOST
+};
+```
+
 
 ## Calling AWS SDK methods
 A hidden feature of lambdasync that is at least very useful during development for exploring the AWS SDK is the ability to call any [AWS SDK](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/index.html) method from the command line.
@@ -52,8 +64,3 @@ or to use a real, working example:
 `lambdasync -c Lambda.getFunction FunctionName=lambdaArn`
 
 If a value matches any key in the `lambdasync.json` file (like `lambdaArn` does) that value will be substituted with the value from the json file, otherwise it will be treated as text. If your value contains spaces add single quotes around it.
-
-
-## Future plans
-
-Lambdasync is currently useful for quick prototyping, but doesn't help you with authentication, or environment variables that you would probably need for production. Both of those are near the top of the todo list.
