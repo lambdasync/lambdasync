@@ -108,9 +108,24 @@ function makeLambdaPolicyArn({lambdaArn, apiGatewayId}) {
     .concat('/*/GET/api');
 }
 
+function parseCommandArgs(args = [], settings = {}) {
+  return args.reduce((acc, current) => {
+    let [key, valueKey] = current.split('=');
+    // If string starts with a [ or {, JSON.parse it
+    if (valueKey[0] === '[' || valueKey[0] === '{') {
+      try {
+        valueKey = JSON.parse(valueKey);
+      } catch (e) {}
+    }
+
+    acc[key] = settings[valueKey] || valueKey;
+    return acc;
+  }, {});
+}
+
 const logger = label => input => {
-  console.log('\n\n');
-  console.log(label, input);
+  console.log('\n\n' + label + '\n');
+  console.log(input);
   console.log('\n\n');
   return input;
 };
@@ -144,6 +159,7 @@ module.exports = {
   startWith,
   delay,
   makeLambdaPolicyArn,
+  parseCommandArgs,
   logger,
   logMessage
 };

@@ -26,7 +26,8 @@ const settingsFields = [
   'apiGatewayPath',
   'apiGatewayUrl',
   'apiGatewayRestApiId',
-  'apiGatewayResourceId'
+  'apiGatewayResourceId',
+  'apiGatewayDeploymentId'
 ];
 
 const settingsPath = path.join(process.cwd(), SETTINGS_FILE);

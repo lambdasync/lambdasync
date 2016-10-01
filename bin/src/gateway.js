@@ -2,9 +2,15 @@ const fs = require('fs');
 const path = require('path');
 
 const aws = require('./aws.js');
-const {LAMBDASYNC_ROOT} = require('./constants.js');
-const {updateSettings} = require('./settings.js');
-const {awsPromise, markdown, chainData, startWith} = require('./util.js');
+const {LAMBDASYNC_ROOT, LAMBDASYNC_SRC, API_STAGE_NAME} = require('./constants.js');
+const {updateSettings, getSettings} = require('./settings.js');
+const {
+  awsPromise,
+  markdown,
+  markdownProperty,
+  chainData,
+  startWith
+} = require('./util.js');
 
 let AWS;
 let apigateway;
@@ -134,14 +140,15 @@ function deployApi(settings) {
     return settings;
   }
   const {apiGatewayRestApiId, apiGatewayPath} = settings;
-  const stageName = 'prod';
+  const stageName = API_STAGE_NAME;
   const apiGatewayUrl = `https://${apiGatewayRestApiId}.execute-api.eu-west-1.amazonaws.com/${stageName}/${apiGatewayPath}`;
   return awsPromise(apigateway, 'createDeployment', {
     restApiId: apiGatewayRestApiId,
     stageName
   })
-    .then(() => updateSettings({
-      apiGatewayUrl
+    .then(({id}) => updateSettings({
+      apiGatewayUrl,
+      apiGatewayDeploymentId: id
     }))
     .then(settings => {
       console.log(markdown({
@@ -150,6 +157,30 @@ function deployApi(settings) {
       }));
       return settings;
     });
+}
+
+function addStageVariables(vars = {}) {
+  const op = (key, value) => ({
+    op: 'replace',
+    path: `/variables/${key}`,
+    value
+  });
+  return getSettings()
+    .then(settings => {
+      const apigateway = getGateway(settings);
+      const restApiId = settings.apiGatewayRestApiId;
+      const patchOperations = Object.keys(vars).map(key => op(key, vars[key]));
+      return awsPromise(apigateway, 'updateStage', {restApiId, stageName: API_STAGE_NAME, patchOperations})
+        .then(() => vars)
+        .then(handleStageVariablesSuccess);
+    });
+}
+
+function handleStageVariablesSuccess(vars) {
+  let templateString = fs.readFileSync(path.join(LAMBDASYNC_SRC, 'markdown', 'secret-success.md'), 'utf8');
+  templateString = Object.keys(vars).reduce((acc, key) =>
+    acc + '**Secret key:** `' + key + '`\n', templateString);
+  console.log(markdown({templateString}));
 }
 
 function setupApiGateway(settings) {
@@ -186,5 +217,6 @@ module.exports = {
   addResource,
   getResources,
   setupApiGateway,
-  deployApi
+  deployApi,
+  addStageVariables
 };
