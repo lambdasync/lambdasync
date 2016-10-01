@@ -16,6 +16,7 @@ const LAMBDASYNC_SRC = path.join(LAMBDASYNC_ROOT, 'bin', 'src');
 const LAMBDASYNC_BIN = path.join(LAMBDASYNC_ROOT, 'node_modules', '.bin');
 const LAMBDASYNC_EXEC_ROLE = 'LambdasyncExecRole';
 const LAMBDASYNC_INVOKE_POLICY = 'LambdasyncInvokePolicy';
+const API_STAGE_NAME = 'prod';
 const TARGET_ROOT = process.cwd();
 const PROMPT_CONFIRM_OVERWRITE_FUNCTION = {type: 'confirm', name: 'confirm', message: 'Function already exists, overwrite?'};
 const PROMPT_INPUT_PROFILE_NAME = {type: 'input', name: 'profileName', message: 'Profile name', default: 'lambdasync'};
@@ -43,6 +44,7 @@ module.exports = {
   LAMBDASYNC_BIN,
   LAMBDASYNC_EXEC_ROLE,
   LAMBDASYNC_INVOKE_POLICY,
+  API_STAGE_NAME,
   TARGET_ROOT,
   PROMPT_CONFIRM_OVERWRITE_FUNCTION,
   PROMPT_INPUT_PROFILE_NAME,
