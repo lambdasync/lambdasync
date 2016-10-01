@@ -98,8 +98,8 @@ function makeLambdaRole(settings) {
       return createRole(settings)
         .then(createPolicy)
         .then(attachPolicy)
-        .then(logMessage('Delaying for 10 seconds so that AWS has time to index the new Role'))
-        .then(delay(10000));
+        .then(logMessage('Delaying for 5 seconds so that AWS has time to index the new Role'))
+        .then(delay(5000));
     });
 }
 

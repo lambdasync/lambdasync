@@ -1,7 +1,8 @@
+const path = require('path');
 const inquirer = require('inquirer');
 const ini = require('ini');
 
-const {writeFile} = require('./file.js');
+const {readFile, writeFile} = require('./file.js');
 const {markdown, addInputDefault} = require('./util.js');
 const {getAccountId} = require('./iam.js');
 const {AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH} = require('./constants.js');
@@ -43,10 +44,18 @@ function getProfile() {
     inquirer.prompt([PROMPT_INPUT_PROFILE_NAME])
       .then(({profileName}) => {
         getAwsSettings()
-          .then(([credentials, config]) => {
+          .then(settings => {
+            return readFile(path.join(process.cwd(), 'package.json'), JSON.parse)
+              .then(packageJson => ({settings, packageJson}))
+              .catch(() => ({settings}));
+          })
+          .then(({settings, packageJson = {}}) => {
+            const [credentials, config] = settings;
+            const {name} = packageJson;
             if (credentials[profileName] && config['profile ' + profileName]) {
               resolve({
-                profileName: profileName,
+                profileName,
+                lambdaName: name,
                 accessKey: credentials[profileName].aws_access_key_id, // eslint-disable-line camelcase
                 secretKey: credentials[profileName].aws_secret_access_key, // eslint-disable-line camelcase
                 region: config['profile ' + profileName].region
@@ -63,7 +72,7 @@ function getProfile() {
 
 function getSettingsInput(defaults) {
   return inquirer.prompt([
-    PROMPT_INPUT_FUNCTION_NAME,
+    addInputDefault(defaults, PROMPT_INPUT_FUNCTION_NAME),
     addInputDefault(defaults, PROMPT_INPUT_ACCESS_KEY),
     addInputDefault(defaults, PROMPT_INPUT_SECRET_KEY),
     addInputDefault(defaults, PROMPT_CHOICE_REGION)
