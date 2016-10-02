@@ -11,6 +11,20 @@ const SETTINGS_FILE = 'lambdasync.json';
 const AWS_USER_DIR = path.join(userHome, '.aws');
 const AWS_CREDENTIALS_PATH = path.join(AWS_USER_DIR, 'credentials');
 const AWS_CONFIG_PATH = path.join(AWS_USER_DIR, 'config');
+const HTTP_GET = 'GET';
+const HTTP_POST = 'POST';
+const HTTP_PUT = 'PUT';
+const HTTP_DELETE = 'DELETE';
+const HTTP_HEAD = 'HEAD';
+const HTTP_PATCH = 'PATCH';
+const HTTP_METHODS = [
+  HTTP_GET,
+  HTTP_POST,
+  HTTP_PUT,
+  HTTP_DELETE,
+  HTTP_HEAD,
+  HTTP_PATCH
+];
 const LAMBDASYNC_ROOT = path.join(__dirname, '..', '..');
 const LAMBDASYNC_SRC = path.join(LAMBDASYNC_ROOT, 'bin', 'src');
 const LAMBDASYNC_BIN = path.join(LAMBDASYNC_ROOT, 'node_modules', '.bin');
@@ -51,5 +65,12 @@ module.exports = {
   PROMPT_INPUT_FUNCTION_NAME,
   PROMPT_INPUT_ACCESS_KEY,
   PROMPT_INPUT_SECRET_KEY,
-  PROMPT_CHOICE_REGION
+  PROMPT_CHOICE_REGION,
+  HTTP_METHODS,
+  HTTP_GET,
+  HTTP_POST,
+  HTTP_PUT,
+  HTTP_DELETE,
+  HTTP_HEAD,
+  HTTP_PATCH
 };

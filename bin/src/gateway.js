@@ -2,7 +2,17 @@ const fs = require('fs');
 const path = require('path');
 
 const aws = require('./aws.js');
-const {LAMBDASYNC_ROOT, LAMBDASYNC_SRC, API_STAGE_NAME} = require('./constants.js');
+const {
+  LAMBDASYNC_ROOT,
+  LAMBDASYNC_SRC,
+  API_STAGE_NAME,
+  HTTP_GET,
+  HTTP_POST,
+  HTTP_PUT,
+  HTTP_DELETE,
+  HTTP_HEAD,
+  HTTP_PATCH
+} = require('./constants.js');
 const {updateSettings, getSettings} = require('./settings.js');
 const {
   awsPromise,
@@ -195,12 +205,12 @@ function setupApiGateway(settings) {
     .then(addResourceToApiGateway)
     .then(res => {
       const params = custom => Object.assign(res, settings, custom);
-      return addMappings(params({httpMethod: 'GET'}))
-        .then(() => addMappings(params({httpMethod: 'POST'})))
-        .then(() => addMappings(params({httpMethod: 'PUT'})))
-        .then(() => addMappings(params({httpMethod: 'DELETE'})))
-        .then(() => addMappings(params({httpMethod: 'HEAD'})))
-        .then(() => addMappings(params({httpMethod: 'PATCH'})));
+      return addMappings(params({httpMethod: HTTP_GET}))
+        .then(() => addMappings(params({httpMethod: HTTP_POST})))
+        .then(() => addMappings(params({httpMethod: HTTP_PUT})))
+        .then(() => addMappings(params({httpMethod: HTTP_DELETE})))
+        .then(() => addMappings(params({httpMethod: HTTP_HEAD})))
+        .then(() => addMappings(params({httpMethod: HTTP_PATCH})));
     })
     .then(result => {
       return updateSettings({
