@@ -23,7 +23,6 @@ const settingsFields = [
   'region',
   'apiGatewayId',
   'apiGatewayName',
-  'apiGatewayPath',
   'apiGatewayUrl',
   'apiGatewayRestApiId',
   'apiGatewayResourceId',

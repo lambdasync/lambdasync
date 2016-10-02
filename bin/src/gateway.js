@@ -6,12 +6,7 @@ const {
   LAMBDASYNC_ROOT,
   LAMBDASYNC_SRC,
   API_STAGE_NAME,
-  HTTP_GET,
-  HTTP_POST,
-  HTTP_PUT,
-  HTTP_DELETE,
-  HTTP_HEAD,
-  HTTP_PATCH
+  HTTP_ANY
 } = require('./constants.js');
 const {updateSettings, getSettings} = require('./settings.js');
 const {
@@ -43,9 +38,9 @@ function createApi({name, description} = {name: defaultName(), description: 'lam
   return awsPromise(apigateway, 'createRestApi', {name, description});
 }
 
-function addResource({parentId, restApiId, pathPart} = {}, settings) {
+function addResource({parentId, restApiId} = {}, settings) {
   apigateway = getGateway(settings);
-  return awsPromise(apigateway, 'createResource', {parentId, restApiId, pathPart});
+  return awsPromise(apigateway, 'createResource', {parentId, restApiId, pathPart: '{proxy+}'});
 }
 
 function getResources({restApiId} = {}, settings) {
@@ -63,21 +58,18 @@ function getRootResource({id} = {}) {
     });
 }
 
-function addResourceToApiGateway({apiGatewayId, apiGatewayPath} = {}) {
+function addResourceToApiGateway({apiGatewayId} = {}) {
   const restApiId = apiGatewayId;
   return getRootResource({id: apiGatewayId})
-    .then(id => {
-      return startWith({
-        restApiId,
-        parentId: id,
-        pathPart: apiGatewayPath
-      })
-        .then(chainData(addResource));
-    });
+    .then(id => startWith({
+      restApiId,
+      parentId: id
+    }))
+    .then(chainData(addResource));
 }
 
-function persistApiGateway({id, name, path} = {}) {
-  return updateSettings({apiGatewayId: id, apiGatewayName: name, apiGatewayPath: path});
+function persistApiGateway({id, name} = {}) {
+  return updateSettings({apiGatewayId: id, apiGatewayName: name});
 }
 
 function addMethod({restApiId, resourceId, httpMethod}) {
@@ -148,9 +140,9 @@ function deployApi(settings) {
   if (settings.apiGatewayUrl) {
     return settings;
   }
-  const {apiGatewayRestApiId, apiGatewayPath} = settings;
+  const {apiGatewayRestApiId} = settings;
   const stageName = API_STAGE_NAME;
-  const apiGatewayUrl = `https://${apiGatewayRestApiId}.execute-api.eu-west-1.amazonaws.com/${stageName}/${apiGatewayPath}`;
+  const apiGatewayUrl = `https://${apiGatewayRestApiId}.execute-api.eu-west-1.amazonaws.com/${stageName}/api`;
   return awsPromise(apigateway, 'createDeployment', {
     restApiId: apiGatewayRestApiId,
     stageName
@@ -196,21 +188,16 @@ function setupApiGateway(settings) {
   if (settings.apiGatewayId) {
     return settings;
   }
+  console.log('Deploying your API endpoint...');
   const name = `api-${settings.lambdaName}`;
   const description = `Lambdasync API for function ${settings.lambdaName}`;
-  const path = 'api';
 
   return createApi({name, description}, settings)
-    .then(({id, name}) => persistApiGateway({id, name, path}))
+    .then(({id, name}) => persistApiGateway({id, name}))
     .then(addResourceToApiGateway)
     .then(res => {
       const params = custom => Object.assign(res, settings, custom);
-      return addMappings(params({httpMethod: HTTP_GET}))
-        .then(() => addMappings(params({httpMethod: HTTP_POST})))
-        .then(() => addMappings(params({httpMethod: HTTP_PUT})))
-        .then(() => addMappings(params({httpMethod: HTTP_DELETE})))
-        .then(() => addMappings(params({httpMethod: HTTP_HEAD})))
-        .then(() => addMappings(params({httpMethod: HTTP_PATCH})));
+      return addMappings(params({httpMethod: HTTP_ANY}));
     })
     .then(result => {
       return updateSettings({

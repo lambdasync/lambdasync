@@ -5,6 +5,4 @@
 **Function name:** `{{lambdaName}}`
 **Region:** `{{region}}`
 
-Lambdasync was successfully set up.
-
 Deploying your function...

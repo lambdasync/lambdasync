@@ -105,7 +105,7 @@ function makeLambdaPolicyArn({lambdaArn, apiGatewayId}) {
   return lambdaArn
     .replace('arn:aws:lambda', 'arn:aws:execute-api')
     .replace(/function.*?$/g, apiGatewayId)
-    .concat(`/*/*/api`);
+    .concat(`/*/*/*`);
 }
 
 function parseCommandArgs(args = [], settings = {}) {

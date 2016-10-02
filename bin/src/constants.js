@@ -11,6 +11,7 @@ const SETTINGS_FILE = 'lambdasync.json';
 const AWS_USER_DIR = path.join(userHome, '.aws');
 const AWS_CREDENTIALS_PATH = path.join(AWS_USER_DIR, 'credentials');
 const AWS_CONFIG_PATH = path.join(AWS_USER_DIR, 'config');
+const HTTP_ANY = 'ANY';
 const HTTP_GET = 'GET';
 const HTTP_POST = 'POST';
 const HTTP_PUT = 'PUT';
@@ -67,6 +68,7 @@ module.exports = {
   PROMPT_INPUT_SECRET_KEY,
   PROMPT_CHOICE_REGION,
   HTTP_METHODS,
+  HTTP_ANY,
   HTTP_GET,
   HTTP_POST,
   HTTP_PUT,
