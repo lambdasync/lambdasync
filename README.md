@@ -1,4 +1,4 @@
-# Lambdasync
+# ![Lambdasync logo](logo.png?raw=true "Lambdasync logo")
 
 A tool to scaffold, deploy and update [AWS Lambda](https://aws.amazon.com/lambda/details/) functions from the command line.
 
