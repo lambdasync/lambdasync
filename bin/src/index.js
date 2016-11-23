@@ -10,6 +10,7 @@ const {setupApiGateway, deployApi, addStageVariables} = require('./gateway');
 const {setLambdaPermission} = require('./permission.js');
 const {callApi} = require('./call-api.js');
 const {makeLambdaRole} = require('./iam.js');
+const scaffold = require('./scaffold.js');
 
 const command = minimist(process.argv.slice(2), {
   alias: {
@@ -28,6 +29,11 @@ function handleCommand(command) {
     return getSettings()
       .then(argParser)
       .then(addStageVariables);
+  }
+
+  if (command._[0] === 'new') {
+    scaffold(command._[1]);
+    return;
   }
 
   if (command.version) {

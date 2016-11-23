@@ -14,7 +14,7 @@ function promisedExec(command, options) { // eslint-disable-line no-unused-vars
   return new Promise((resolve, reject) => {
     cp.exec(command, options = {}, (err, stdout) => {
       if (err) {
-        return reject(err);
+        return reject(err);parseCommandArgs
       }
       resolve(stdout);
     });
@@ -111,6 +111,9 @@ function makeLambdaPolicyArn({lambdaArn, apiGatewayId}) {
 function parseCommandArgs(args = [], settings = {}) {
   return args.reduce((acc, current) => {
     let [key, valueKey] = current.split('=');
+    if (!key || !valueKey) {
+      return acc;
+    }
     // If string starts with a [ or {, JSON.parse it
     if (valueKey[0] === '[' || valueKey[0] === '{') {
       try {
@@ -151,6 +154,7 @@ module.exports = {
   promisedExec,
   markdown,
   markdownProperty,
+  mustacheLite,
   addInputDefault,
   getProductionModules,
   awsPromise,
