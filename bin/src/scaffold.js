@@ -1,8 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+const validate = require("validate-npm-package-name");
 
 const maybeInit = require('./init.js');
-const {mustacheLite} = require('./util.js');
+const {mustacheLite, markdown} = require('./util.js');
 const {
   LAMBDASYNC_ROOT,
   LAMBDASYNC_SRC,
@@ -12,7 +13,16 @@ const {
 
 const TEMPLATE_PATH = path.join(LAMBDASYNC_ROOT, 'bin', 'template');
 
-module.exports = function scaffold(name) {
+module.exports = function scaffold(name = '') {
+  // Validate name
+  const validatedName = validate(name);
+  if (!validatedName.validForNewPackages) {
+    console.log(markdown({
+      templatePath: 'markdown/naming.md',
+      data: {}
+    }));
+    return;
+  }
   fs.mkdirSync(name);
   process.chdir(name);
   // Move index.js example as is
