@@ -32,11 +32,13 @@ const settingsFields = [
 const settingsPath = path.join(process.cwd(), SETTINGS_FILE);
 
 function getSettings() {
+  const settingsPath = path.join(process.cwd(), SETTINGS_FILE);
   return readFile(settingsPath, JSON.parse)
     .catch(() => ({}));
 }
 
 function putSettings(settings) {
+  const settingsPath = path.join(process.cwd(), SETTINGS_FILE);
   return writeFile(
     settingsPath,
     filterSettings(settings, settingsFields),

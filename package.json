@@ -28,6 +28,7 @@
     "marked-terminal": "1.6.1",
     "minimist": "1.2.0",
     "rimraf": "2.5.4",
-    "user-home": "2.0.0"
+    "user-home": "2.0.0",
+    "validate-npm-package-name": "2.2.2"
   }
 }

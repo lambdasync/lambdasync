@@ -4,5 +4,3 @@
 **AWS Account ID:** `{{accountId}}`
 **Function name:** `{{lambdaName}}`
 **Region:** `{{region}}`
-
-Deploying your function...
