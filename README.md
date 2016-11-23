@@ -7,8 +7,28 @@ A tool to scaffold, deploy and update [AWS Lambda](https://aws.amazon.com/lambda
 `npm install lambdasync -g`
 
 
-## Add a handler function
-To have something to deploy you need to first create an entry function in an `./index.js` file, your file should export a CommonJS module called `handler` like this:
+## Getting started
+
+To use Lambdasync you will need an AWS Account, and credentials, check out the [official docs on how to get your credentials](http://goo.gl/aMbXsg) before you start.
+
+To scaffold a new project run:
+
+`lambdasync new project-name`
+
+This will prompt you for all information needed to talk to the AWS APIs. See [Prompt params](#prompt) for more information.
+
+ The `new` command will create 3 files in a new folder with your project name.
+
+ A `lambdasync.json` that holds lambdasync meta data for your project.
+
+ A basic `package.json` file similar to what you would get from running `npm init`.
+
+ And lastly an `index.js` file that contains your handler function.
+
+
+## Handler functions
+
+The handler function is what you actually deploy. `lambdasync new` has scaffolded a basic hello world type handler for you, that is ready to deploy:
 
 ```
 exports.handler = (event, context, callback) => {
@@ -19,29 +39,26 @@ exports.handler = (event, context, callback) => {
 };
 ```
 
+The handler function should always be in the `./index.js` file and export a CommonJS module called `handler` like in the example, anything else you are free to change.
+
 More information on how to write a Lambda handler function can be found in [the official docs](http://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-handler.html).
 
 
-## Setup and deploy
-To use Lambdasync you will need an AWS Account, and credentials, check out the [official docs on how to get your credentials](http://goo.gl/aMbXsg) before you start.
+## Deploy
 
-Run `lambdasync` in the root folder of your project. If this is the first time you run Lambdasync it will prompt you for:
-```
-'profileName', // Name of local aws-cli profile to save to, default lambdasync
-'lambdaName', // Name of lambda function on AWS
-'accessKey', // AWS Access Key ID AKIAIOSFODNN7EXAMPLE
-'secretKey', // AWS Secret Access Key  wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-'region', // us-east-1
-```
-The `profileName` is used as an alias for your credentials that are saved in the `~/.aws` directory in a format compatible with official [AWS CLI](https://aws.amazon.com/cli/) profiles. That means no sensitive information is saved in the repository and you can reuse profiles between Lambdasync and AWS CLI.
+To deploy your API run:
 
- If you only plan to use Lambdasync with one AWS account leave it at the default profile name: `lambdasync`. Otherwise having a `work` profile and a `personal` profile can be a good idea.
+`lambdasync`
 
-Next, your project folder will be zipped and deployed to lambda, if this is the first deploy an API Gateway will be setup automatically to add an endpoint to your function.
+inside your project folder.
+
+Your project folder will be zipped and deployed to lambda, if this is the first deploy an API Gateway will be setup automatically to add an endpoint to your function.
 
 When the deploy is done, you will get a URL where you can call your API.
 
+
 ## Adding secrets
+
 `lambdasync secret DB_HOST=127.0.0.1`
 
 Secrets can be stored to avoid putting sensitive data in your source code. Secrets are stored as API Gateway stage variables and can be accessed through the incoming `event` object, under `stageVariables`.
@@ -53,7 +70,6 @@ exports.handler = function(event, context, callback) {
 };
 ```
 
-
 ## Calling AWS SDK methods
 A hidden feature of lambdasync that is at least very useful during development for exploring the AWS SDK is the ability to call any [AWS SDK](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/index.html) method from the command line.
 
@@ -64,3 +80,23 @@ or to use a real, working example:
 `lambdasync -c Lambda.getFunction FunctionName=lambdaArn`
 
 If a value matches any key in the `lambdasync.json` file (like `lambdaArn` does) that value will be substituted with the value from the json file, otherwise it will be treated as text. If your value contains spaces add single quotes around it.
+
+
+## <a name="prompt"></a>Prompt params
+
+When setting up a new project lambdasync will prompt you for:
+
+* Profile name
+* AWS Credentials
+* Function name
+* AWS region
+
+The `profileName` is used as an alias for your credentials that are saved in the `~/.aws` directory in a format compatible with official [AWS CLI](https://aws.amazon.com/cli/) profiles. That means no sensitive information is saved in the repository and you can reuse profiles between Lambdasync and AWS CLI.
+
+How to get your access key and secret key is [covered here](http://goo.gl/aMbXsg).
+
+ If you only plan to use Lambdasync with one AWS account leave it at the default profile name: `lambdasync`. Otherwise having a `work` profile and a `personal` profile can be a good idea.
+
+ The function name will be automatically taken from the package.json, but you have a chance to change it.
+
+ AWS region will be saved to your profile as a default preference for future Lambdasync functions.
