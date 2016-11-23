@@ -18,8 +18,7 @@ module.exports = function scaffold(name = '') {
   const validatedName = validate(name);
   if (!validatedName.validForNewPackages) {
     console.log(markdown({
-      templatePath: 'markdown/naming.md',
-      data: {}
+      templatePath: 'markdown/naming.md'
     }));
     return;
   }
@@ -36,4 +35,11 @@ module.exports = function scaffold(name = '') {
     path.join( process.cwd(), 'package.json' ),
     mustacheLite(jsonTemplate, { name })
   );
+  maybeInit({})
+    .then(() => {
+      console.log(markdown({
+        templatePath: 'markdown/scaffold-success.md',
+        data: {name}
+      }));
+    });
 };
