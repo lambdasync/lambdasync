@@ -32,39 +32,48 @@ function init() {
         return;
       }
     })
-    .then(getProfile)
-    .then(getSettingsInput);
+    .then(getDefaults)
+    .then(getSettingsInput)
+    .catch(err => console.log(err))
 }
 
-function getProfile() {
+function getDefaults() {
   return new Promise((resolve, reject) => {
     console.log(markdown({
       templatePath: 'markdown/init.md'
     }));
     inquirer.prompt([PROMPT_INPUT_PROFILE_NAME])
       .then(({profileName}) => {
-        getAwsSettings()
-          .then(settings => {
-            return readFile(path.join(process.cwd(), 'package.json'), JSON.parse)
-              .then(packageJson => ({settings, packageJson}))
-              .catch(() => ({settings}));
-          })
-          .then(({settings, packageJson = {}}) => {
-            const [credentials, config] = settings;
-            const {name} = packageJson;
-            if (credentials[profileName] && config['profile ' + profileName]) {
-              resolve({
-                profileName,
-                lambdaName: name,
-                accessKey: credentials[profileName].aws_access_key_id, // eslint-disable-line camelcase
-                secretKey: credentials[profileName].aws_secret_access_key, // eslint-disable-line camelcase
-                region: config['profile ' + profileName].region
-              });
-            } else {
-              resolve({});
-            }
-          })
-          .catch(() => resolve({})); // eslint-disable-line handle-callback-err
+        return getAwsSettings()
+          .then(([credentials, config]) => ({
+            credentials,
+            config,
+            profileName
+          }))
+          .catch(() => { profileName }); // eslint-disable-line handle-callback-err
+      })
+      .then(settings => {
+        return readFile(path.join(process.cwd(), 'package.json'), JSON.parse)
+          .then(packageJson => ({settings, packageJson}))
+          .catch(() => ({settings}));
+      })
+      .then(({settings = {}, packageJson = {}}) => {
+        const {credentials, config, profileName} = settings;
+        const {name} = packageJson;
+        if (credentials && credentials[profileName] && config && config['profile ' + profileName]) {
+          resolve({
+            profileName,
+            lambdaName: name || '',
+            accessKey: credentials[profileName].aws_access_key_id, // eslint-disable-line camelcase
+            secretKey: credentials[profileName].aws_secret_access_key, // eslint-disable-line camelcase
+            region: config['profile ' + profileName].region
+          });
+        } else {
+          resolve({
+            profileName,
+            lambdaName: name || '',
+          });
+        }
       })
       .catch(err => reject(err));
   });
