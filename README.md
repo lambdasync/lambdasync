@@ -2,6 +2,8 @@
 
 A tool to scaffold, deploy and update [AWS Lambda](https://aws.amazon.com/lambda/details/) functions from the command line.
 
+# ![Demo](demo.gif?raw=true "Usage demo")
+
 ## Installation
 
 `npm install lambdasync -g`
