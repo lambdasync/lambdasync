@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const ncp = require("copy-paste");
 
 const aws = require('./aws.js');
 const {
@@ -156,6 +157,7 @@ function deployApi(settings) {
         templatePath: 'markdown/deploy-success.md',
         data: settings
       }));
+      ncp.copy(settings.apiGatewayUrl);
       return settings;
     });
 }
