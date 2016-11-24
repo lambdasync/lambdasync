@@ -80,7 +80,6 @@ function getDefaults() {
 }
 
 function getSettingsInput(defaults) {
-  console.log('getSettingsInput', defaults);
   return inquirer.prompt([
     addInputDefault(defaults, PROMPT_INPUT_FUNCTION_NAME),
     addInputDefault(defaults, PROMPT_INPUT_ACCESS_KEY),
