@@ -36,8 +36,8 @@ const TARGET_ROOT = process.cwd();
 const PROMPT_CONFIRM_OVERWRITE_FUNCTION = {type: 'confirm', name: 'confirm', message: 'Function already exists, overwrite?'};
 const PROMPT_INPUT_PROFILE_NAME = {type: 'input', name: 'profileName', message: 'Profile name', default: 'lambdasync'};
 const PROMPT_INPUT_FUNCTION_NAME = {type: 'input', name: 'lambdaName', message: 'Function name'};
-const PROMPT_INPUT_ACCESS_KEY = {type: 'input', name: 'accessKey', message: 'AWS Access Key'};
-const PROMPT_INPUT_SECRET_KEY = {type: 'input', name: 'secretKey', message: 'AWS Secret Key'};
+const PROMPT_INPUT_ACCESS_KEY = {type: 'password', name: 'accessKey', message: 'AWS Access Key'};
+const PROMPT_INPUT_SECRET_KEY = {type: 'password', name: 'secretKey', message: 'AWS Secret Key'};
 const PROMPT_CHOICE_REGION = {type: 'list', name: 'region', message: 'Region', choices: [
   {name: 'US East (N. Virginia)', value: 'us-east-1'},
   {name: 'US West (Oregon)', value: 'us-west-2'},
