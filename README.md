@@ -1,6 +1,6 @@
 # ![Lambdasync logo](logo.png?raw=true "Lambdasync logo")
 
-A tool to scaffold, deploy and update [AWS Lambda](https://aws.amazon.com/lambda/details/) functions from the command line.
+A tool to scaffold, deploy and update JSON APIs on [AWS Lambda](https://aws.amazon.com/lambda/details/) from the command line.
 
 # ![Demo](demo.gif?raw=true "Usage demo")
 
@@ -45,6 +45,8 @@ The handler function should always be in the `./index.js` file and export a Comm
 
 More information on how to write a Lambda handler function can be found in [the official docs](http://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-handler.html).
 
+### Tutorial
+A basic REST API handler function can be found in [this tutorial](http://fredrik.anderzon.se/2016/11/25/create-a-rest-api-on-aws-lambda-using-lambdasync/), with [example code here](https://github.com/fanderzon/lambdasync-example).
 
 ## Deploy
 
