@@ -10,9 +10,21 @@ function config(settings, args) {
     FunctionName: settings.lambdaArn
   };
 
-  function configToLambdaConfig(config, defaultValues = {}) {
-    let values = defaultValues;
+  const nameMap = {
+    description: 'Description',
+    memory: 'MemorySize',
+    timeout: 'Timeout'
+  };
 
+  function configToLambdaConfig(config, defaultValues = {}) {
+    const lambdaValues = Object.keys(config).reduce((acc, key) => {
+      const lambdaKey = nameMap[key];
+      if (lambdaKey) {
+        acc[lambdaKey] = config[key];
+      }
+      return acc;
+    }, {});
+    return Object.assign({}, defaultValues, lambdaValues);
   }
 
   // There are 2 things that could be happening
@@ -24,14 +36,24 @@ function config(settings, args) {
   awsPromise(api, 'getFunctionConfiguration', requestParams)
     .then(currentConfig => {
       if (argCount === 0) {
-        console.log(markdown({
+        return console.log(markdown({
           templatePath: 'markdown/config.md',
-          data: currentConfig
+          data: Object.assign({operation: 'config'}, currentConfig)
         }));
       }
 
       const parsedArgs = parseCommandArgs(args, settings);
-      console.log('parsedArgs', parsedArgs);
+      const newConfig = configToLambdaConfig(parsedArgs);
+      awsPromise(api, 'updateFunctionConfiguration', Object.assign(
+        {}, newConfig, requestParams
+      ))
+        .then(res => {
+          console.log(markdown({
+            templatePath: 'markdown/config.md',
+            data: Object.assign({operation: 'successfully updated config'}, res)
+          }));
+        })
+        .catch(err => console.log(err));
 
 
     })
