@@ -11,7 +11,7 @@ const {setLambdaPermission} = require('./permission.js');
 const {callApi} = require('./call-api.js');
 const {makeLambdaRole} = require('./iam.js');
 const scaffold = require('./scaffold.js');
-const config = require('./config.js');
+const {config, variable} = require('./config.js');
 
 const command = minimist(process.argv.slice(2), {
   alias: {
@@ -35,6 +35,11 @@ function handleCommand(command) {
   if (command._[0] === 'config') {
     return getSettings()
       .then(settings => config(settings, command._.slice(1)));
+  }
+
+  if (command._[0] === 'variable') {
+    return getSettings()
+      .then(settings => variable(settings, command._[1], command._.slice(2)));
   }
 
   if (command._[0] === 'new') {

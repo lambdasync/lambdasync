@@ -1,5 +1,5 @@
 const aws = require('./aws.js');
-const {awsPromise, parseCommandArgs, markdown} = require('./util.js');
+const {awsPromise, parseCommandArgs, markdown, markdownProperty, mustacheLite} = require('./util.js');
 
 function config(settings, args) {
   const argCount = Array.isArray(args) ? args.length : 0;
@@ -60,4 +60,60 @@ function config(settings, args) {
     .catch(err => console.log(err));
 }
 
-module.exports = config;
+function variable(settings, operation, args) {
+  const argCount = Array.isArray(args) ? args.length : 0;
+
+  console.log('variable', operation, args);
+
+  const AWS = aws(settings);
+  const api = new AWS.Lambda();
+  const requestParams = {
+    FunctionName: settings.lambdaArn
+  };
+
+  awsPromise(api, 'getFunctionConfiguration', requestParams)
+    .then(currentConfig => {
+      let vars = '';
+
+      if (argCount === 0) {
+        if (currentConfig && currentConfig.Environment && currentConfig.Environment.Variables) {
+          vars = Object.keys(currentConfig.Environment.Variables).reduce((acc, key) => {
+            acc += markdownProperty({
+              key: currentConfig.Environment.Variables[key],
+              label: key
+            });
+            return acc;
+          }, '')
+        }
+        return console.log(markdown({
+          templatePath: 'markdown/variable.md',
+          data: { vars }
+        }));
+      }
+
+      const parsedArgs = parseCommandArgs(args, settings);
+      if (operation === 'set' && parsedArgs) {
+        const env = currentConfig.Environment || {};
+        env.Variables = env.Variables || {};
+        Object.keys(parsedArgs).forEach(key => {
+          env.Variables[key] = parsedArgs[key];
+        });
+        console.log(env);
+
+        awsPromise(api, 'updateFunctionConfiguration', Object.assign(
+          {}, requestParams, {
+            Environment: env
+          }
+        ))
+          .then(res => console.log(res))
+          .catch(err => console.log(err));
+      }
+    })
+    .catch(err => console.log(err));
+
+}
+
+module.exports = {
+  config,
+  variable
+};
