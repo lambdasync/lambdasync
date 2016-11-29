@@ -74,6 +74,19 @@ exports.handler = function(event, context, callback) {
 };
 ```
 
+## Config
+
+`lambdasync config`
+Will print out configuration info about your Lambda function, such as function ARN (Amazon Resource Name), Runtime (Node version), when the function was last modified, etc.
+
+Lambdasync will also let you change the config for `description`, `timeout` and `memory` by running the config command with the key and new value:
+
+```
+lambdasync config timeout=3
+lambdasync memory=192
+lambdasync description='Example project for lambdasync'
+```
+
 ## Calling AWS SDK methods
 A hidden feature of lambdasync that is at least very useful during development for exploring the AWS SDK is the ability to call any [AWS SDK](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/index.html) method from the command line.
 
