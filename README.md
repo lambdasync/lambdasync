@@ -84,8 +84,8 @@ Lambdasync will also let you change the config for `description`, `timeout` and 
 
 ```
 lambdasync config timeout=3
-lambdasync memory=192
-lambdasync description='Example project for lambdasync'
+lambdasync config memory=192
+lambdasync config description='Example project for lambdasync'
 ```
 
 ## Calling AWS SDK methods
