@@ -14,7 +14,7 @@ function promisedExec(command, options) { // eslint-disable-line no-unused-vars
   return new Promise((resolve, reject) => {
     cp.exec(command, options = {}, (err, stdout) => {
       if (err) {
-        return reject(err);parseCommandArgs
+        return reject(err);
       }
       resolve(stdout);
     });
@@ -88,7 +88,7 @@ function getProductionModules() {
 
 function awsPromise(api, method, params) {
   return new Promise((resolve, reject) => {
-    api[method](params, function cb(err, data) {
+    api[method](params, (err, data) => {
       if (err) {
         return reject(err);
       }
@@ -106,6 +106,13 @@ function makeLambdaPolicyArn({lambdaArn, apiGatewayId}) {
     .replace('arn:aws:lambda', 'arn:aws:execute-api')
     .replace(/function.*?$/g, apiGatewayId)
     .concat(`/*/*/*`);
+}
+
+function handleGenericFailure() {
+  // TODO: Log errors here, possibly to a Lambda instance? :)
+  console.log(markdown({
+    templatePath: 'markdown/generic-fail.md'
+  }));
 }
 
 function parseCommandArgs(args = [], settings = {}) {
@@ -152,6 +159,7 @@ const startWith = data => Promise.resolve(data);
 
 module.exports = {
   promisedExec,
+  handleGenericFailure,
   markdown,
   markdownProperty,
   mustacheLite,
