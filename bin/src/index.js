@@ -31,8 +31,20 @@ function handleCommand(command) {
   }
 
   if (command._[0] === 'secret') {
+    let operation;
+    let args;
+
+    // `lambdasync secret db=prod` sets db, but to remove it you need
+    // the `remove` keyword `lambdasync secret remove db`
+    if (command._[1] && command._[1].toLowerCase() === 'remove') {
+      operation = 'remove';
+      args = command._.slice(2);
+    } else {
+      operation = 'set';
+      args = command._.slice(1);
+    }
     return getSettings()
-      .then(settings => variable(settings, command._[1], command._.slice(2)));
+      .then(settings => variable(settings, operation, args));
   }
 
   if (command._[0] === 'new') {
