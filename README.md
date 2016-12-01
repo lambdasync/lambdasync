@@ -76,6 +76,8 @@ A secret can be removed with:
 
 `lambdasync secret remove DB_HOST`
 
+> Note: Prior to 2.0 secrets were saved as API Gateway stage variables, because Lambda had no environment variable support.
+
 
 ## Config
 
