@@ -124,7 +124,7 @@ function createFunction() {
       MemorySize: 128, // default
       Publish: true,
       Timeout: 3
-    }, function cb(err, data) {
+    }, (err, data) => {
       if (err) {
         return reject(err);
       }

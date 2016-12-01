@@ -3,7 +3,7 @@ const inquirer = require('inquirer');
 const ini = require('ini');
 
 const {readFile, writeFile} = require('./file.js');
-const {markdown, addInputDefault} = require('./util.js');
+const {markdown, addInputDefault, handleGenericFailure} = require('./util.js');
 const {getAccountId} = require('./iam.js');
 const {AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH} = require('./constants.js');
 const {
@@ -34,7 +34,7 @@ function init() {
     })
     .then(getDefaults)
     .then(getSettingsInput)
-    .catch(err => console.log(err))
+    .catch(handleGenericFailure);
 }
 
 function getDefaults() {
@@ -50,7 +50,7 @@ function getDefaults() {
             config,
             profileName
           }))
-          .catch(() => { profileName }); // eslint-disable-line handle-callback-err
+          .catch(() => ({profileName})); // eslint-disable-line handle-callback-err no-unused-expressions
       })
       .then(settings => {
         return readFile(path.join(process.cwd(), 'package.json'), JSON.parse)
@@ -71,7 +71,7 @@ function getDefaults() {
         } else {
           resolve({
             profileName,
-            lambdaName: name || '',
+            lambdaName: name || ''
           });
         }
       })

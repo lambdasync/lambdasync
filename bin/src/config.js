@@ -3,7 +3,6 @@ const {
   awsPromise,
   handleGenericFailure,
   markdown,
-  markdownProperty,
   mustacheLite,
   parseCommandArgs
 } = require('./util.js');
@@ -61,8 +60,6 @@ function config(settings, args) {
           }));
         })
         .catch(handleGenericFailure);
-
-
     })
     .catch(handleGenericFailure);
 }
@@ -89,11 +86,11 @@ function variable(settings, operation, args) {
         if (currentConfig && currentConfig.Environment && currentConfig.Environment.Variables) {
           vars = Object.keys(currentConfig.Environment.Variables).reduce((acc, key) => {
             return acc + '**Secret key:** `' + key + '`\n';
-          }, '')
+          }, '');
         }
         return console.log(markdown({
           templatePath: 'markdown/secret.md',
-          data: { vars }
+          data: {vars}
         }));
       }
 
@@ -111,7 +108,7 @@ function variable(settings, operation, args) {
             Environment: env
           }
         ))
-          .then(res => {
+          .then(() => {
             const templateString = makeSecretMarkdown(
               Object.keys(parsedArgs), '## {{secretWord}} successfully set', 'Secret key'
             );
@@ -119,7 +116,6 @@ function variable(settings, operation, args) {
               templateString
             }));
           });
-
       } else if (op === 'remove') {
         // Keep track of removals so we can tell the user
         const removed = [];
@@ -141,7 +137,7 @@ function variable(settings, operation, args) {
               Environment: env
             }
           ))
-            .then(res => {
+            .then(() => {
               // Let's build some markdown!
               let templateString = '';
               if (removed.length > 0) {
@@ -165,13 +161,12 @@ function variable(settings, operation, args) {
       }
     })
     .catch(handleGenericFailure);
-
 }
 
-function makeSecretMarkdown( list, heading, label ) {
+function makeSecretMarkdown(list, heading, label) {
   let str = '';
   const secretWord = list.length === 1 ? 'secret' : 'secrets';
-  str += mustacheLite(heading, { secretWord }) + '\n';
+  str += mustacheLite(heading, {secretWord}) + '\n';
 
   list.forEach(key => {
     str += '**' + label + ':** `' + key + '`\n';
