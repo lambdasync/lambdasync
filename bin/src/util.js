@@ -108,6 +108,13 @@ function makeLambdaPolicyArn({lambdaArn, apiGatewayId}) {
     .concat(`/*/*/*`);
 }
 
+function handleGenericFailure(err) {
+  // TODO: Log errors here, possibly to a Lambda instance? :)
+  console.log(markdown({
+    templatePath: 'markdown/generic-fail.md'
+  }));
+}
+
 function parseCommandArgs(args = [], settings = {}) {
   return args.reduce((acc, current) => {
     let [key, valueKey] = current.split('=');
@@ -152,6 +159,7 @@ const startWith = data => Promise.resolve(data);
 
 module.exports = {
   promisedExec,
+  handleGenericFailure,
   markdown,
   markdownProperty,
   mustacheLite,

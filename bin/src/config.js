@@ -1,5 +1,12 @@
 const aws = require('./aws.js');
-const {awsPromise, parseCommandArgs, markdown, markdownProperty, mustacheLite} = require('./util.js');
+const {
+  awsPromise,
+  handleGenericFailure,
+  markdown,
+  markdownProperty,
+  mustacheLite,
+  parseCommandArgs
+} = require('./util.js');
 
 function config(settings, args) {
   const argCount = Array.isArray(args) ? args.length : 0;
@@ -53,11 +60,11 @@ function config(settings, args) {
             data: Object.assign({operation: 'successfully updated config'}, res)
           }));
         })
-        .catch(err => console.log(err));
+        .catch(handleGenericFailure);
 
 
     })
-    .catch(err => console.log(err));
+    .catch(handleGenericFailure);
 }
 
 function variable(settings, operation, args) {
@@ -157,7 +164,7 @@ function variable(settings, operation, args) {
         }
       }
     })
-    .catch(err => console.log(err));
+    .catch(handleGenericFailure);
 
 }
 

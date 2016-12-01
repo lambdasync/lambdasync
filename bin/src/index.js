@@ -25,13 +25,6 @@ function handleCommand(command) {
     return callApi(command);
   }
 
-  // if (command._[0] === 'secret') {
-  //   const argParser = parseCommandArgs.bind(null, command._.slice(1));
-  //   return getSettings()
-  //     .then(argParser)
-  //     .then(addStageVariables);
-  // }
-
   if (command._[0] === 'config') {
     return getSettings()
       .then(settings => config(settings, command._.slice(1)));
