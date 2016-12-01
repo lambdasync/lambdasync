@@ -62,18 +62,20 @@ When the deploy is done, you will get a URL where you can call your API.
 
 
 ## Adding secrets
+`lambdasync secret DB_HOST=127.0.0.1`
 
-
-`lambdasync secret set DB_HOST=127.0.0.1`
-
-Secrets can be stored to avoid putting sensitive data in your source code. Secrets are stored as API Gateway stage variables and can be accessed through the incoming `event` object, under `stageVariables`.
-
+Secrets can be stored to avoid putting sensitive data in your source code. Secrets are stored as AWS Lambda environment variables and can be accessed through `process.env` in your handler functions.
 ```
 exports.handler = function(event, context, callback) {
-  const {DB_HOST} = event.stageVariables;
+  const {DB_HOST} = process.env.DB_HOST;
   // ... do something with DB_HOST
 };
 ```
+
+A secret can be removed with:
+
+`lambdasync secret remove DB_HOST`
+
 
 ## Config
 
