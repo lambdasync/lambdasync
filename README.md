@@ -9,9 +9,12 @@ A tool to scaffold, deploy and update JSON APIs on [AWS Lambda](https://aws.amaz
 `npm install lambdasync -g`
 
 
-## Getting started
+## Prerequisites
 
 To use Lambdasync you will need an AWS Account, and credentials, check out the [official docs on how to get your credentials](http://goo.gl/aMbXsg) before you start.
+
+
+## Getting started
 
 To scaffold a new project run:
 
