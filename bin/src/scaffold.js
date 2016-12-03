@@ -1,19 +1,14 @@
 const fs = require('fs');
 const path = require('path');
-const validate = require("validate-npm-package-name");
+const validate = require('validate-npm-package-name');
 
 const maybeInit = require('./init.js');
 const {mustacheLite, markdown} = require('./util.js');
-const {
-  LAMBDASYNC_ROOT,
-  LAMBDASYNC_SRC,
-  API_STAGE_NAME,
-  HTTP_ANY
-} = require('./constants.js');
+const {LAMBDASYNC_ROOT} = require('./constants.js');
 
 const TEMPLATE_PATH = path.join(LAMBDASYNC_ROOT, 'bin', 'template');
 
-module.exports = function scaffold(name = '') {
+module.exports = function (name = '') {
   // Validate name
   const validatedName = validate(name);
   if (!validatedName.validForNewPackages) {
@@ -26,14 +21,14 @@ module.exports = function scaffold(name = '') {
   process.chdir(name);
   // Move index.js example as is
   fs.writeFileSync(
-    path.join( process.cwd(), 'index.js' ),
+    path.join(process.cwd(), 'index.js'),
     fs.readFileSync(path.join(TEMPLATE_PATH, 'index.js'))
   );
   // Copy over package.json with name replaced
   const jsonTemplate = fs.readFileSync(path.join(TEMPLATE_PATH, 'package.json'), 'utf8');
   fs.writeFileSync(
-    path.join( process.cwd(), 'package.json' ),
-    mustacheLite(jsonTemplate, { name })
+    path.join(process.cwd(), 'package.json'),
+    mustacheLite(jsonTemplate, {name})
   );
   maybeInit({})
     .then(() => {

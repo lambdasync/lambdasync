@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const ncp = require("copy-paste");
+const ncp = require('copy-paste');
 
 const aws = require('./aws.js');
 const {
