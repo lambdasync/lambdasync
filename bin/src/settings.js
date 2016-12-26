@@ -29,16 +29,14 @@ const settingsFields = [
   'apiGatewayDeploymentId'
 ];
 
-const settingsPath = path.join(process.cwd(), SETTINGS_FILE);
-
 function getSettings() {
-  return readFile(settingsPath, JSON.parse)
+  return readFile(path.join(process.cwd(), SETTINGS_FILE), JSON.parse)
     .catch(() => ({}));
 }
 
 function putSettings(settings) {
   return writeFile(
-    settingsPath,
+    path.join(process.cwd(), SETTINGS_FILE),
     filterSettings(settings, settingsFields),
     jsonStringify);
 }
