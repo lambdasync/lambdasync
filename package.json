@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fanderzon/lambdasync.git"
+    "url": "git+https://github.com/lambdasync/lambdasync.git"
   },
   "author": "Fredrik Andersson",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/fanderzon/lambdasync/issues"
+    "url": "https://github.com/lambdasync/lambdasync/issues"
   },
-  "homepage": "https://github.com/fanderzon/lambdasync#readme",
+  "homepage": "https://github.com/lambdasync/lambdasync#readme",
   "dependencies": {
     "aws-sdk": "2.7.8",
     "bestzip": "1.1.3",
