@@ -2,20 +2,20 @@ const fs = require('fs');
 const path = require('path');
 const ncp = require('copy-paste');
 
-const aws = require('./aws.js');
+const aws = require('../aws.js');
 const {
-  LAMBDASYNC_ROOT,
   LAMBDASYNC_SRC,
   API_STAGE_NAME,
-  HTTP_ANY
-} = require('./constants.js');
-const {updateSettings, getSettings} = require('./settings.js');
+  HTTP_ANY,
+  HTTP_OPTIONS
+} = require('../constants.js');
+const {updateSettings, getSettings} = require('../settings.js');
 const {
   awsPromise,
   markdown,
   chainData,
   startWith
-} = require('./util.js');
+} = require('../util.js');
 
 let AWS;
 let apigateway;
@@ -73,68 +73,130 @@ function persistApiGateway({id, name} = {}) {
   return updateSettings({apiGatewayId: id, apiGatewayName: name});
 }
 
-function addMethod({restApiId, resourceId, httpMethod}) {
+function addMethodAny({restApiId, resourceId}) {
   return awsPromise(apigateway, 'putMethod', {
     restApiId,
     resourceId,
-    httpMethod,
+    httpMethod: HTTP_ANY,
+    authorizationType: 'NONE',
+    apiKeyRequired: false,
+    requestParameters: {
+      'method.request.path.proxy': true
+    }
+  });
+}
+
+function addMethodAnyResponse({restApiId, resourceId}) {
+  return awsPromise(apigateway, 'putMethodResponse', {
+    restApiId,
+    resourceId,
+    httpMethod: HTTP_ANY,
+    statusCode: '200',
+    responseModels: {
+      'application/json': null
+    }
+  });
+}
+
+function addMethodAnyIntegration({restApiId, resourceId, region, lambdaArn}) {
+  const uri = `arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations`;
+  return awsPromise(apigateway, 'putIntegration', {
+    restApiId,
+    resourceId,
+    uri,
+    type: 'AWS_PROXY',
+    httpMethod: HTTP_ANY,
+    integrationHttpMethod: 'POST',
+    passthroughBehavior: 'WHEN_NO_MATCH',
+    contentHandling: 'CONVERT_TO_TEXT',
+    cacheNamespace: resourceId,
+    cacheKeyParameters: ['method.request.path.proxy']
+  });
+}
+
+function addMethodOptions({restApiId, resourceId}) {
+  return awsPromise(apigateway, 'putMethod', {
+    restApiId,
+    resourceId,
+    httpMethod: HTTP_OPTIONS,
     authorizationType: 'NONE',
     apiKeyRequired: false,
     requestParameters: {}
   });
 }
 
-function addMethodResponse({restApiId, resourceId, httpMethod}) {
+function addMethodOptionsResponse({restApiId, resourceId}) {
   return awsPromise(apigateway, 'putMethodResponse', {
     restApiId,
     resourceId,
-    httpMethod,
+    httpMethod: HTTP_OPTIONS,
     statusCode: '200',
+    responseParameters: {
+      'method.response.header.Access-Control-Allow-Headers': false,
+      'method.response.header.Access-Control-Allow-Methods': false,
+      'method.response.header.Access-Control-Allow-Origin': false
+    },
     responseModels: {
       'application/json': 'Empty'
     }
   });
 }
 
-function addIntegration({restApiId, resourceId, httpMethod, region, lambdaArn}) {
-  const uri = `arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations`;
+function addMethodOptionsIntegration({restApiId, resourceId}) {
   return awsPromise(apigateway, 'putIntegration', {
     restApiId,
     resourceId,
-    httpMethod,
-    integrationHttpMethod: 'POST',
-    type: 'AWS',
-    uri,
+    httpMethod: HTTP_OPTIONS,
+    type: 'MOCK',
     requestTemplates: {
-      'application/json': fs.readFileSync(path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'integration-request.vm'), 'utf8')
+      'application/json': '{"statusCode": 200}'
     },
-    passthroughBehavior: 'WHEN_NO_TEMPLATES'
+    passthroughBehavior: 'WHEN_NO_MATCH',
+    cacheNamespace: resourceId,
+    cacheKeyParameters: []
   });
 }
 
-function addIntegrationResponse({restApiId, resourceId, httpMethod}) {
+function addMethodOptionsIntegrationResponse({restApiId, resourceId}) {
   return awsPromise(apigateway, 'putIntegrationResponse', {
     restApiId,
     resourceId,
-    httpMethod,
-    statusCode: '200'
+    httpMethod: HTTP_OPTIONS,
+    statusCode: '200',
+    responseParameters: {
+      'method.response.header.Access-Control-Allow-Headers': '\'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token\'',
+      'method.response.header.Access-Control-Allow-Methods': '\'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT\'',
+      'method.response.header.Access-Control-Allow-Origin': '\'*\''
+    },
+    responseTemplates: {
+      'application/json': null
+    }
   });
 }
 
-function addMappings({id, restApiId, httpMethod, region, lambdaArn, lambdaRole}) {
+function addCorsSupport({restApiId, resourceId}) {
+  return startWith({
+    restApiId,
+    resourceId
+  })
+    .then(chainData(addMethodOptions))
+    .then(chainData(addMethodOptionsResponse))
+    .then(chainData(addMethodOptionsIntegration))
+    .then(chainData(addMethodOptionsIntegrationResponse));
+}
+
+function addMappings({id, restApiId, region, lambdaArn, lambdaRole}) {
   return startWith({
     restApiId,
     resourceId: id,
-    httpMethod,
     region,
     lambdaArn,
     lambdaRole
   })
-    .then(chainData(addMethod))
-    .then(chainData(addMethodResponse))
-    .then(chainData(addIntegration))
-    .then(chainData(() => ({httpMethod})))
-    .then(chainData(addIntegrationResponse));
+    .then(chainData(addMethodAny))
+    .then(chainData(addMethodAnyResponse))
+    .then(chainData(addMethodAnyIntegration))
+    .then(chainData(addCorsSupport));
 }
 
 function deployApi(settings) {
