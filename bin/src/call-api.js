@@ -30,7 +30,7 @@ function callApi(input) {
 
       return awsPromise(api, method, params);
     })
-    .then(res => console.log('RESULT:\n\n', res))
+    .then(res => console.log('RESULT:\n\n', JSON.stringify(res, null, '  ')))
     .catch(err => console.error('ERROR:\n\n', err));
 }
 
