@@ -86,18 +86,6 @@ function addMethodAny({restApiId, resourceId}) {
   });
 }
 
-function addMethodAnyResponse({restApiId, resourceId}) {
-  return awsPromise(apigateway, 'putMethodResponse', {
-    restApiId,
-    resourceId,
-    httpMethod: HTTP_ANY,
-    statusCode: '200',
-    responseModels: {
-      'application/json': null
-    }
-  });
-}
-
 function addMethodAnyIntegration({restApiId, resourceId, region, lambdaArn}) {
   const uri = `arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations`;
   return awsPromise(apigateway, 'putIntegration', {
@@ -194,7 +182,6 @@ function addMappings({id, restApiId, region, lambdaArn, lambdaRole}) {
     lambdaRole
   })
     .then(chainData(addMethodAny))
-    .then(chainData(addMethodAnyResponse))
     .then(chainData(addMethodAnyIntegration))
     .then(chainData(addCorsSupport));
 }
