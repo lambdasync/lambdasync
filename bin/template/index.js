@@ -1,6 +1,10 @@
 exports.handler = (event, context, callback) => {
-  callback(null, {
+  context.fail({
     statusCode: 200,
-    message: 'Everything is awesome'
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify('Everything is awesome')
   });
 };
