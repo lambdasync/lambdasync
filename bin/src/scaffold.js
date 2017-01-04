@@ -6,9 +6,9 @@ const maybeInit = require('./init.js');
 const {mustacheLite, markdown} = require('./util.js');
 const {LAMBDASYNC_ROOT} = require('./constants.js');
 
-const TEMPLATE_PATH = path.join(LAMBDASYNC_ROOT, 'bin', 'template');
+const validTemplatenames = ['vanilla', 'express'];
 
-module.exports = function (name = '') {
+module.exports = function (name = '', templateName) {
   // Validate name
   const validatedName = validate(name);
   if (!validatedName.validForNewPackages) {
@@ -17,6 +17,16 @@ module.exports = function (name = '') {
     }));
     return;
   }
+
+  // Validate templateName
+  let template = templateName;
+  if (!validTemplatenames.includes(template)) {
+    // If the templateName is not valid default to `vanilla`
+    template = 'vanilla';
+  }
+
+  const TEMPLATE_PATH = path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'new', template);
+
   fs.mkdirSync(name);
   process.chdir(name);
   // Move index.js example as is

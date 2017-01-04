@@ -54,7 +54,7 @@ function handleCommand(command) {
   }
 
   if (command._[0] === 'new') {
-    scaffold(command._[1]);
+    scaffold(command._[1], command.express ? 'express', 'vanilla');
     return;
   }
 
