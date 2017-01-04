@@ -12,6 +12,7 @@ const {callApi} = require('./call-api.js');
 const {makeLambdaRole} = require('./iam.js');
 const scaffold = require('./scaffold.js');
 const {config, variable} = require('./config.js');
+const devServer = require('./devserver');
 
 const command = minimist(process.argv.slice(2), {
   alias: {
@@ -23,6 +24,11 @@ const command = minimist(process.argv.slice(2), {
 function handleCommand(command) {
   if (command.call) {
     return callApi(command);
+  }
+
+  if (command._[0] === 'devserver') {
+    return getSettings()
+      .then(settings => devServer(settings, command._.slice(1)));
   }
 
   if (command._[0] === 'config') {
