@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const validate = require('validate-npm-package-name');
 const ncp = require('ncp').ncp;
+const spawn = require('cross-spawn');
 
 const maybeInit = require('./init.js');
 const {mustacheLite, markdown} = require('./util.js');
@@ -38,10 +39,16 @@ module.exports = function (name = '', templateName) {
     .then(() => copyPackageJson(TEMPLATE_PATH, process.cwd(), {name}))
     // Run the project init flow
     .then(() => maybeInit({}))
+    .then(install)
     .then(() => {
       console.log(markdown({
         templatePath: 'markdown/scaffold-success.md',
         data: {name}
+      }));
+    })
+    .catch(() => {
+      console.log(markdown({
+        templatePath: 'markdown/scaffold-fail.md'
       }));
     });
 };
@@ -65,4 +72,16 @@ function copyPackageJson(templateDir, targetDir, data) {
     path.join(targetDir, 'package.json'),
     mustacheLite(jsonTemplate, data)
   );
+}
+
+function install() {
+  return new Promise((resolve, reject) => {
+    var child = spawn('npm', ['install'], {stdio: 'inherit'});
+    child.on('close', function(code) {
+      if (code !== 0) {
+        return reject('npm install failed');
+      }
+      return resolve();
+    });
+  });
 }
