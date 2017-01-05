@@ -3,9 +3,9 @@ const express = require('express');
 const app = express();
 
 const expressCompat = require('./express-compat');
-const lambdaHandler = require(path.join(process.cwd(), 'index.js')).handler;
 
 function start(settings) {
+  const lambdaHandler = require(path.join(process.cwd(), 'index.js')).handler;
   const compat = expressCompat(settings);
 
   function proxyHandler(req, res) {
