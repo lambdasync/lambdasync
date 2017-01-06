@@ -9,6 +9,9 @@
   "bin": {
     "lambdasync": "bin/src/index.js"
   },
+  "scripts": {
+    "test": "jest"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lambdasync/lambdasync.git"
@@ -36,5 +39,8 @@
     "rimraf": "2.5.4",
     "user-home": "2.0.0",
     "validate-npm-package-name": "2.2.2"
+  },
+  "devDependencies": {
+    "jest": "^18.1.0"
   }
 }
