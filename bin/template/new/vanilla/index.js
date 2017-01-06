@@ -1,3 +1,4 @@
+'use strict';
 exports.handler = (event, context, callback) => {
   context.fail({
     statusCode: 200,
