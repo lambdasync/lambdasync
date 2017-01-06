@@ -248,7 +248,9 @@ function setupApiGateway(settings) {
     .then(addResourceToApiGateway)
     .then(res => {
       const params = custom => Object.assign(res, settings, custom);
-      return addMappings(params({httpMethod: HTTP_ANY}));
+      return addMappings(params({httpMethod: HTTP_ANY}))
+        .then(() => getRootResource({id: res.restApiId}))
+        .then(id => addMappings(params({httpMethod: HTTP_ANY, id })));
     })
     .then(result => {
       return updateSettings({
