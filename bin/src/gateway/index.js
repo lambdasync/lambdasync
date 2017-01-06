@@ -192,7 +192,7 @@ function deployApi(settings) {
   }
   const {apiGatewayRestApiId, region} = settings;
   const stageName = API_STAGE_NAME;
-  const apiGatewayUrl = `https://${apiGatewayRestApiId}.execute-api.${region}.amazonaws.com/${stageName}/api`;
+  const apiGatewayUrl = `https://${apiGatewayRestApiId}.execute-api.${region}.amazonaws.com/${stageName}`;
   return awsPromise(apigateway, 'createDeployment', {
     restApiId: apiGatewayRestApiId,
     stageName
@@ -248,7 +248,9 @@ function setupApiGateway(settings) {
     .then(addResourceToApiGateway)
     .then(res => {
       const params = custom => Object.assign(res, settings, custom);
-      return addMappings(params({httpMethod: HTTP_ANY}));
+      return addMappings(params({httpMethod: HTTP_ANY}))
+        .then(() => getRootResource({id: res.restApiId}))
+        .then(id => addMappings(params({httpMethod: HTTP_ANY, id })));
     })
     .then(result => {
       return updateSettings({
