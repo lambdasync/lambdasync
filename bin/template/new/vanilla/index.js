@@ -1,6 +1,6 @@
 'use strict';
-exports.handler = (event, context, callback) => {
-  context.fail({
+exports.handler = (event, context) => {
+  context.success({
     statusCode: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',

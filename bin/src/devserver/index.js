@@ -2,15 +2,15 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const app = express();
-
 const expressCompat = require('./express-compat');
+
+const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({extended: true}));
 
 function start(settings) {
-  const lambdaHandler = require(path.join(process.cwd(), 'index.js')).handler;
+  const lambdaHandler = require(path.join(process.cwd(), 'index.js')).handler; // eslint-disable-line import/no-dynamic-require
   const compat = expressCompat(settings);
 
   function proxyHandler(req, res) {
@@ -28,12 +28,12 @@ function start(settings) {
   }
 
   app.get('/favicon*', (req, res) => {
-    res.sendFile(__dirname + '/favicon.ico');
+    res.sendFile(path.join(__dirname, '/favicon.ico'));
   });
 
   app.all('*', proxyHandler);
 
-  app.listen(3003, function() {
+  app.listen(3003, () => {
     console.log('running server on port 3003');
   });
 }

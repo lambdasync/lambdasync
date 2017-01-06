@@ -1,13 +1,13 @@
 const RESOURCE_PATH = '/{proxy+}';
 const REQUEST_ID = 'cb8b2c6b-cp7f-11e6-921a-0f16afc9bdc3';
 
-function lambda(lambdasyncMeta) {
+function lambda() {
   return {
     callbackToExpressResponse(res, err, success) {
       return proxyResponseToExpressResponse(res, err || success);
-    },
+    }
   };
-};
+}
 
 function express(lambdasyncMeta) {
   return {
@@ -38,7 +38,7 @@ function express(lambdasyncMeta) {
             cognitoAuthenticationType: null,
             cognitoAuthenticationProvider: null,
             userArn: null,
-            userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36",
+            userAgent: req.headers['user-agent'],
             user: null
           },
           resourcePath: RESOURCE_PATH,
@@ -46,15 +46,19 @@ function express(lambdasyncMeta) {
           apiId: lambdasyncMeta.apiGatewayId
         },
         body: stringifyBody(req.body),
-        isBase64Encoded: false,
+        isBase64Encoded: false
       };
     },
     responseToContext(res) {
       var _callbackWaitsForEmptyEventLoop = true;
 
       return {
-        get callbackWaitsForEmptyEventLoop() { return _callbackWaitsForEmptyEventLoop; },
-        set callbackWaitsForEmptyEventLoop(value) { _callbackWaitsForEmptyEventLoop = value; },
+        get callbackWaitsForEmptyEventLoop() {
+          return _callbackWaitsForEmptyEventLoop;
+        },
+        set callbackWaitsForEmptyEventLoop(value) {
+          _callbackWaitsForEmptyEventLoop = value;
+        },
         done: proxyResponseToExpressResponse.bind(null, res),
         succeed: proxyResponseToExpressResponse.bind(null, res),
         fail: proxyResponseToExpressResponse.bind(null, res),
@@ -63,10 +67,10 @@ function express(lambdasyncMeta) {
         functionName: lambdasyncMeta.lambdaName,
         memoryLimitInMB: '128',
         functionVersion: '$LATEST',
-        getRemainingTimeInMillis: function() {},
+        getRemainingTimeInMillis: () => 1000,
         invokeid: '6914b06p-v26a-11m6-9bae-9b185520a60a',
         awsRequestId: REQUEST_ID,
-        invokedFunctionArn: lambdasyncMeta.lambdaArn,
+        invokedFunctionArn: lambdasyncMeta.lambdaArn
       };
     }
   };
@@ -95,14 +99,14 @@ function stringifyBody(subject) {
       return null;
     }
     return JSON.stringify(subject);
-  } catch(err) {
+  } catch (err) {
     return null;
   }
 }
 
-module.exports = function lambdaCompatFactory(lambdasyncMeta) {
+module.exports = function (lambdasyncMeta) {
   return {
-    lambda: lambda(lambdasyncMeta),
+    lambda: lambda(),
     express: express(lambdasyncMeta)
-  }
+  };
 };

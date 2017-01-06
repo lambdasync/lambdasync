@@ -54,14 +54,14 @@ module.exports = function (name = '', templateName) {
 };
 
 function copyTemplateDir(templateDir, targetDir) {
-  const packageJsonFilter = { filter: filename => !filename.includes('package.json') };
+  const packageJsonFilter = {filter: filename => !filename.includes('package.json')};
   return new Promise((resolve, reject) => {
     ncp(templateDir, targetDir, packageJsonFilter, err => {
       if (err) {
         return reject(err);
       }
       return resolve();
-    })
+    });
   });
 }
 
@@ -77,7 +77,7 @@ function copyPackageJson(templateDir, targetDir, data) {
 function install() {
   return new Promise((resolve, reject) => {
     var child = spawn('npm', ['install'], {stdio: 'inherit'});
-    child.on('close', function(code) {
+    child.on('close', code => {
       if (code !== 0) {
         return reject('npm install failed');
       }
