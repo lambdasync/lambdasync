@@ -45,7 +45,7 @@ function express(lambdasyncMeta) {
           httpMethod: req.method,
           apiId: lambdasyncMeta.apiGatewayId
         },
-        body: req.body,
+        body: stringifyBody(req.body),
         isBase64Encoded: false,
       };
     },
@@ -87,6 +87,17 @@ function proxyResponseToExpressResponse(expressRes, proxyResponse) {
   expressRes
     .status(parseInt(statusCode, 10))
     .send(body);
+}
+
+function stringifyBody(subject) {
+  try {
+    if (JSON.stringify(subject) === '{}') {
+      return null;
+    }
+    return JSON.stringify(subject);
+  } catch(err) {
+    return null;
+  }
 }
 
 module.exports = function lambdaCompatFactory(lambdasyncMeta) {
