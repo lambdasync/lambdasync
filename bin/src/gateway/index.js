@@ -192,7 +192,7 @@ function deployApi(settings) {
   }
   const {apiGatewayRestApiId, region} = settings;
   const stageName = API_STAGE_NAME;
-  const apiGatewayUrl = `https://${apiGatewayRestApiId}.execute-api.${region}.amazonaws.com/${stageName}/api`;
+  const apiGatewayUrl = `https://${apiGatewayRestApiId}.execute-api.${region}.amazonaws.com/${stageName}`;
   return awsPromise(apigateway, 'createDeployment', {
     restApiId: apiGatewayRestApiId,
     stageName
