@@ -1,5 +1,4 @@
-'use strict';
-exports.handler = (event, context) => {
+function simpleSuccess(event, context) {
   context.succeed({
     statusCode: 200,
     headers: {
@@ -8,4 +7,8 @@ exports.handler = (event, context) => {
     },
     body: JSON.stringify('Everything is awesome!')
   });
+};
+
+module.exports = {
+  simpleSuccess
 };

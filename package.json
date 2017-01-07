@@ -41,6 +41,8 @@
     "validate-npm-package-name": "2.2.2"
   },
   "devDependencies": {
-    "jest": "^18.1.0"
+    "jest": "^18.1.0",
+    "supertest": "2.0.1",
+    "supertest-as-promised": "4.0.2"
   }
 }
