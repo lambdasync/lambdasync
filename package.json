@@ -10,7 +10,7 @@
     "lambdasync": "bin/src/index.js"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -41,8 +41,8 @@
     "validate-npm-package-name": "2.2.2"
   },
   "devDependencies": {
+    "aws-serverless-express": "^1.2.0",
     "jest": "^18.1.0",
-    "supertest": "2.0.1",
-    "supertest-as-promised": "4.0.2"
+    "supertest": "2.0.1"
   }
 }
