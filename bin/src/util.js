@@ -10,6 +10,7 @@ marked.setOptions({
   renderer: new TerminalRenderer()
 });
 
+// Executes a CLI command and returns a promise
 function promisedExec(command, options) { // eslint-disable-line no-unused-vars
   return new Promise((resolve, reject) => {
     cp.exec(command, options = {}, (err, stdout) => {
@@ -21,6 +22,7 @@ function promisedExec(command, options) { // eslint-disable-line no-unused-vars
   });
 }
 
+// Replaces {{vars}} in strings
 function mustacheLite(template, data = {}) {
   let content = template;
   Object.keys(data).forEach(key => {
@@ -29,6 +31,9 @@ function mustacheLite(template, data = {}) {
   return content;
 }
 
+// Takes a markdown string, or path to a markdown file (relative to Lambdasync's `src` dir)
+// and produces terminal styled markdown
+// Will also replace an mustahce vars with values from the supplied data object
 function markdown({templateString = null, templatePath = null, data = {}}) {
   const template = templateString ?
     templateString : fs.readFileSync(path.join(LAMBDASYNC_SRC, templatePath), 'utf8');
@@ -37,9 +42,12 @@ function markdown({templateString = null, templatePath = null, data = {}}) {
   return `\n${md}\n`;
 }
 
-function markdownProperty({key, label}, obj) {
-  if (obj && Object.prototype.hasOwnProperty.call(obj, key)) {
-    return '**' + label + ':** `' + obj[key] + '`\n';
+// Takes an object of {key,label} and a data object and produces
+// markdown for a bold label and inline code ticks around the value
+// that was fetched from the data object using the key
+function markdownProperty({key, label}, data) {
+  if (data && Object.prototype.hasOwnProperty.call(data, key)) {
+    return '**' + label + ':** `' + data[key] + '`\n';
   }
   return '';
 }

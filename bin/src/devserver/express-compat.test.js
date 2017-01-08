@@ -53,7 +53,6 @@ describe('express compatibility', () => {
   it('can create lambda callback from express res', () => {
     const settings = settingsMock.fullSettings;
     const compat = expressCompat(settings);
-    console.log(compat.lambda);
     const callbackResult = compat.lambda.callbackToExpressResponse(mockExpressRes, handlerMock.createProxyReturnObject(200));
     expect(callbackResult).toBe(1);
 

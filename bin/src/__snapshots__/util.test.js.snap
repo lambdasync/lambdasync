@@ -1,0 +1,34 @@
+exports[`util markdown should produce styled markdown output from path 1`] = `
+"
+[35m[4m[1m# Markdown test[22m[24m[39m
+[0m=====================================[0m
+
+[35m[4m[1m# Properties[22m[24m[39m
+[0m[1mFirst property[22m: [33mFoo[39m
+[1mSecond property[22m: [33mBar[39m[0m
+
+[32m[1m## Next[22m[39m
+
+   [33mcd Baz
+   lambdasync[39m
+
+
+"
+`;
+
+exports[`util markdown should produce styled markdown output from string 1`] = `
+"
+[0m[1mHello Foo![22m My name is [3mBar[23m[0m
+
+
+"
+`;
+
+exports[`util markdownProperty should produce markdown properties based on the input 1`] = `
+"**You:** \`Foo\`
+"
+`;
+
+exports[`util mustacheLite should not replace unmatched params 1`] = `"Hello, {{you}}! My name is Bar!"`;
+
+exports[`util mustacheLite should replace matching params 1`] = `"Hello, Foo! My name is Bar!"`;

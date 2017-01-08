@@ -10,7 +10,7 @@
     "lambdasync": "bin/src/index.js"
   },
   "scripts": {
-    "test": "jest --coverage"
+    "test": "jest --coverage --watch"
   },
   "repository": {
     "type": "git",
@@ -47,6 +47,6 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "collectCoverageFrom": ["bin/src/**"]
+    "collectCoverageFrom": ["bin/src/**/*.js"]
   }
 }
