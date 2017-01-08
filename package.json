@@ -1,6 +1,6 @@
 {
   "name": "lambdasync",
-  "version": "3.0.0-1",
+  "version": "3.0.0",
   "description": "Easy sync between local code and AWS lambda functions",
   "main": "src/bin/index.js",
   "engines": {
