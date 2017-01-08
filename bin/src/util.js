@@ -136,7 +136,6 @@ function handleGenericFailure() {
 // takes an array of CLI args [ 'timeout=10' ] and returns a key value object
 // {timeout: 10}, it will also try to JSON parse args
 function parseCommandArgs(args = [], settings = {}) {
-  console.log('parseCommandArgs', args, settings);
   return args.reduce((acc, current) => {
     let [key, valueKey] = current.split('=');
     if (!key || !valueKey) {
