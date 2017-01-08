@@ -36,11 +36,16 @@ This will prompt you for all information needed to talk to the AWS APIs. See [Pr
 The handler function is what you actually deploy. `lambdasync new` has scaffolded a basic hello world type handler for you, that is ready to deploy:
 
 ```
+'use strict';
 exports.handler = (event, context, callback) => {
   callback(null, {
     statusCode: 200,
-    message: "Everything is awesome"
-  })
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify('Everything is awesome!')
+  });
 };
 ```
 
