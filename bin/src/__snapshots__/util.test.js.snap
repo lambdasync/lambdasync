@@ -1,3 +1,5 @@
+exports[`util addInputDefault should add defaults to inquirer input 1`] = `"test"`;
+
 exports[`util markdown should produce styled markdown output from path 1`] = `
 "
 [35m[4m[1m# Markdown test[22m[24m[39m

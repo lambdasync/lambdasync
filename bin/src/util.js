@@ -52,6 +52,7 @@ function markdownProperty({key, label}, data) {
   return '';
 }
 
+// Helps add default values to `inquirer` prompt objects
 function addInputDefault(defaults, inputConfig) {
   if (defaults[inputConfig.name]) {
     return Object.assign({}, inputConfig, {default: defaults[inputConfig.name]});

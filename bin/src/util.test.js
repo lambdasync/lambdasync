@@ -2,7 +2,8 @@ const {
   promisedExec,
   mustacheLite,
   markdown,
-  markdownProperty
+  markdownProperty,
+  addInputDefault
 } = require('./util');
 
 describe('util', () => {
@@ -71,6 +72,18 @@ describe('util', () => {
       );
       expect(result).toMatchSnapshot();
     });
+  });
 
+  describe('addInputDefault', () => {
+    it('should add defaults to inquirer input', () => {
+      const result = addInputDefault(
+        {
+          profileName: 'lambdasync',
+          lambdaName: 'test'
+        },
+        { type: 'input', name: 'lambdaName', message: 'Function name' }
+      );
+      expect(result.default).toMatchSnapshot();
+    });
   });
 });
