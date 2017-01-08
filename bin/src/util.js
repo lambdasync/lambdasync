@@ -60,6 +60,7 @@ function addInputDefault(defaults, inputConfig) {
   return inputConfig;
 }
 
+// Gets object of production dependencies using `npm ls`
 function getProductionDeps() {
   return new Promise((resolve, reject) => {
     cp.exec('npm ls --json --production', (err, stdout) => { // eslint-disable-line handle-callback-err
@@ -71,6 +72,7 @@ function getProductionDeps() {
     });
   });
 }
+
 
 function flattenDeps(deps = {}) {
   return Object.keys(deps).reduce((acc, moduleName) => {
@@ -89,23 +91,30 @@ function removeDuplicates(flatDeps) {
   }, []);
 }
 
+// Gets a flat array of all production dependencies
 function getProductionModules() {
   return getProductionDeps()
     .then(flattenDeps)
     .then(removeDuplicates);
 }
 
+// Calls an aws sdk class and method and returns a promise
 function awsPromise(api, method, params) {
   return new Promise((resolve, reject) => {
-    api[method](params, (err, data) => {
-      if (err) {
-        return reject(err);
-      }
-      return resolve(data);
-    });
+    try {
+      api[method](params, (err, data) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(data);
+      });
+    } catch (err) {
+      return reject(err)
+    }
   });
 }
 
+// Removes the `:12345` version at the end of the function ARN
 function stripLambdaVersion(lambdaArn) {
   return lambdaArn.replace(/:[0-9]+$/, '');
 }
@@ -124,7 +133,10 @@ function handleGenericFailure() {
   }));
 }
 
+// takes an array of CLI args [ 'timeout=10' ] and returns a key value object
+// {timeout: 10}, it will also try to JSON parse args
 function parseCommandArgs(args = [], settings = {}) {
+  console.log('parseCommandArgs', args, settings);
   return args.reduce((acc, current) => {
     let [key, valueKey] = current.split('=');
     if (!key || !valueKey) {
@@ -166,21 +178,24 @@ const chainData = fn =>
 
 const startWith = data => Promise.resolve(data);
 
-module.exports = {
-  promisedExec,
-  handleGenericFailure,
-  markdown,
-  markdownProperty,
-  mustacheLite,
-  addInputDefault,
-  getProductionModules,
-  awsPromise,
-  stripLambdaVersion,
-  chainData,
-  startWith,
-  delay,
-  makeLambdaPolicyArn,
-  parseCommandArgs,
-  logger,
-  logMessage
-};
+exports = module.exports = {};
+exports.promisedExec = promisedExec;
+exports.handleGenericFailure = handleGenericFailure;
+exports.markdown = markdown;
+exports.markdownProperty = markdownProperty;
+exports.mustacheLite = mustacheLite;
+exports.addInputDefault = addInputDefault;
+exports.getProductionModules = getProductionModules;
+exports.awsPromise = awsPromise;
+exports.stripLambdaVersion = stripLambdaVersion;
+exports.chainData = chainData;
+exports.startWith = startWith;
+exports.delay = delay;
+exports.makeLambdaPolicyArn = makeLambdaPolicyArn;
+exports.parseCommandArgs = parseCommandArgs;
+exports.logger = logger;
+exports.logMessage = logMessage;
+
+if (process.env.NODE_ENV === 'test') {
+    exports.getProductionDeps = getProductionDeps;
+}

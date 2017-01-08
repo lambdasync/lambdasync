@@ -1,5 +1,7 @@
 exports[`util addInputDefault should add defaults to inquirer input 1`] = `"test"`;
 
+exports[`util makeLambdaPolicyArn should make a policy ARN from FunctionArn and gateway id 1`] = `"arn:aws:execute-api:eu-west-1:202020202020:4ghl2mfk30/*/*/*"`;
+
 exports[`util markdown should produce styled markdown output from path 1`] = `
 "
 [35m[4m[1m# Markdown test[22m[24m[39m
@@ -34,3 +36,10 @@ exports[`util markdownProperty should produce markdown properties based on the i
 exports[`util mustacheLite should not replace unmatched params 1`] = `"Hello, {{you}}! My name is Bar!"`;
 
 exports[`util mustacheLite should replace matching params 1`] = `"Hello, Foo! My name is Bar!"`;
+
+exports[`util parseCommandArgs should create an object with the arg array from CLI 1`] = `
+Object {
+  "memory": "128",
+  "timeout": "10",
+}
+`;
