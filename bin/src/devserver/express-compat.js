@@ -88,7 +88,7 @@ function proxyResponseToExpressResponse(expressRes, proxyResponse) {
     Object.keys(headers).forEach(key => expressRes.setHeader(key, headers[key]));
   }
 
-  expressRes
+  return expressRes
     .status(parseInt(statusCode, 10))
     .send(body);
 }

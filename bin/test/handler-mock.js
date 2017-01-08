@@ -123,6 +123,7 @@ function expressApp() {
 }
 
 exports = module.exports = {};
+exports.createProxyReturnObject = createProxyReturnObject;
 exports.contextSucceed = contextSucceed;
 exports.contextFail = contextFail;
 exports.contextDone = contextDone;

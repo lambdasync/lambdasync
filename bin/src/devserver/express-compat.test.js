@@ -1,5 +1,6 @@
 const expressCompat = require('./express-compat');
 const settingsMock = require('../../test/settings-mock.js');
+const handlerMock = require('../../test/handler-mock.js');
 
 const mockExpressReq = {
   method: 'GET',
@@ -19,8 +20,10 @@ const mockExpressReq = {
 
 const mockExpressRes = {
   send: () => {
-
-  }
+    return 1;
+  },
+  setHeader: () => mockExpressRes,
+  status: () => mockExpressRes
 };
 
 describe('express compatibility', () => {
@@ -29,9 +32,10 @@ describe('express compatibility', () => {
     const compat = expressCompat(settings);
     const event = compat.express.requestToLambdaEvent(mockExpressReq);
     expect(typeof event).toBe('object');
+    expect(event.httpMethod).toBe(mockExpressReq.method);
     expect(event.path).toBe(mockExpressReq.originalUrl);
     expect(event.requestContext.accountId).toBe(settings.accountId);
-    expect(event.httpMethod).toBe(mockExpressReq.method);
+    expect(event.requestContext.identity.sourceIp).toBe(mockExpressReq.headers['x-forwarded-for']);
   });
 
   it('can create lambda context from express res', () => {
@@ -42,6 +46,16 @@ describe('express compatibility', () => {
     expect(typeof context.done).toBe('function');
     expect(typeof context.succeed).toBe('function');
     expect(typeof context.fail).toBe('function');
+    expect(context.succeed(handlerMock.createProxyReturnObject(200))).toBe(1);
     expect(context.functionName).toBe(settings.lambdaName);
+  });
+
+  it('can create lambda callback from express res', () => {
+    const settings = settingsMock.fullSettings;
+    const compat = expressCompat(settings);
+    console.log(compat.lambda);
+    const callbackResult = compat.lambda.callbackToExpressResponse(mockExpressRes, handlerMock.createProxyReturnObject(200));
+    expect(callbackResult).toBe(1);
+
   });
 });
