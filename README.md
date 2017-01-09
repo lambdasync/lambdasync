@@ -1,6 +1,6 @@
 # ![Lambdasync logo](logo.png?raw=true "Lambdasync logo")
 
-A tool to scaffold, deploy and update JSON APIs on [AWS Lambda](https://aws.amazon.com/lambda/details/) from the command line.
+A tool to scaffold, deploy and update functions on [AWS Lambda](https://aws.amazon.com/lambda/details/) from the command line.
 
 # ![Demo](demo.gif?raw=true "Usage demo")
 
@@ -22,18 +22,18 @@ To scaffold a new project run:
 
 This will prompt you for all information needed to talk to the AWS APIs. See [Prompt params](#prompt) for more information.
 
- The `new` command will create 3 files in a new folder with your project name.
+ The `new` command will create a new folder with your project name containing.
 
  A `lambdasync.json` that holds lambdasync meta data for your project.
 
  A basic `package.json` file similar to what you would get from running `npm init`.
 
- And lastly an `index.js` file that contains your handler function.
+An `index.js` file that contains your handler function.
 
 
 ## Handler functions
 
-The handler function is what you actually deploy. `lambdasync new` has scaffolded a basic hello world type handler for you, that is ready to deploy:
+The handler function is what you actually deploy. `lambdasync new` has created a basic hello world type handler for you, that is ready to deploy:
 
 ```
 'use strict';
@@ -49,12 +49,24 @@ exports.handler = (event, context, callback) => {
 };
 ```
 
-The handler function should always be in the `./index.js` file and export a CommonJS module called `handler` like in the example, anything else you are free to change.
+The handler function should always be in the `./index.js` file and export a CommonJS module called `handler` like in the example.
+
+The callback should always return an object with `{statusCode, headers, body}` like above.
 
 More information on how to write a Lambda handler function can be found in [the official docs](http://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-handler.html).
 
+
 ### Tutorial
 A basic REST API handler function can be found in [this tutorial](http://fredrik.anderzon.se/2016/11/25/create-a-rest-api-on-aws-lambda-using-lambdasync/), with [example code here](https://github.com/fanderzon/lambdasync-example).
+
+
+## Express apps
+If you are more familiar with writing express.js applications, and want to use that knowledge when writing lambda apps you can create your project with:
+
+`lambdasync new project-name --express`
+
+This will scaffold a project bootstrapped with [aws-serverless-express](https://github.com/awslabs/aws-serverless-express), that lets you use most express goodness on Lambda.
+
 
 ## Deploy
 
@@ -67,6 +79,14 @@ inside your project folder.
 Your project folder will be zipped and deployed to lambda, if this is the first deploy an API Gateway will be setup automatically to add an endpoint to your function.
 
 When the deploy is done, you will get a URL where you can call your API.
+
+
+## Dev server
+If you don't want to deploy to test every change you can use the built in dev server using:
+
+`lambdasync devserver`
+
+This will serve your handler function at http://localhost:3003 .
 
 
 ## Adding secrets
