@@ -165,6 +165,22 @@ const logMessage = message => input => {
   return input;
 };
 
+function isDate(date) {
+  return Object.prototype.toString.call(date) === '[object Date]';
+}
+
+function formatTimestamp(timestamp) {
+  // Timestamp is in UTC, but user wants to see local time so add the offset
+  // Inverse the offset since we have a UTC time to convert to local
+  const offset = new Date().getTimezoneOffset() * -1;
+  const localTime = new Date(timestamp + (offset * 60 * 1000));
+  if (isDate(localTime)) {
+    const dateStr = localTime.toISOString();
+    return dateStr.replace('T', ' ').substring(0, dateStr.indexOf('.'));
+  }
+  return null;
+}
+
 const delay = time => input => new Promise(resolve => {
   setTimeout(() => {
     resolve(input);
@@ -194,6 +210,8 @@ exports.makeLambdaPolicyArn = makeLambdaPolicyArn;
 exports.parseCommandArgs = parseCommandArgs;
 exports.logger = logger;
 exports.logMessage = logMessage;
+exports.formatTimestamp = formatTimestamp;
+exports.isDate = isDate;
 
 if (process.env.NODE_ENV === 'test') {
     exports.getProductionDeps = getProductionDeps;

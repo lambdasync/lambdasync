@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+'use strict';
 const path = require('path');
 const minimist = require('minimist');
 
@@ -14,6 +15,7 @@ const {makeLambdaRole} = require('./iam.js');
 const scaffold = require('./scaffold.js');
 const {config, variable} = require('./config.js');
 const devServer = require('./devserver');
+const logs = require('./logs');
 
 const command = minimist(process.argv.slice(2), {
   alias: {
@@ -31,6 +33,11 @@ function handleCommand(command) {
     const lambdaHandler = require(path.join(process.cwd(), 'index.js')).handler; // eslint-disable-line import/no-dynamic-require
     return getSettings()
       .then(settings => devServer(settings, lambdaHandler, command._.slice(1)));
+  }
+
+  if (command._[0] === 'logs') {
+    return getSettings()
+      .then(settings => logs(settings));
   }
 
   if (command._[0] === 'config') {
