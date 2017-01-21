@@ -1,8 +1,8 @@
 const chalk = require('chalk');
 
-const aws = require('./aws.js');
-const {getSettings} = require('./settings.js');
-const {awsPromise, delay, formatTimestamp} = require('./util.js');
+const aws = require('./aws');
+const {getSettings} = require('./settings');
+const {awsPromise, delay, formatTimestamp} = require('./util');
 
 const LOG_DELAY = 5000;
 const requestIdRe = /([0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12})/;
@@ -71,7 +71,6 @@ function logEvent({timestamp, message}) {
   } else {
     msg = `${time} ${requestId} - ${message}`;
   }
-
 
   console.log(msg);
 }

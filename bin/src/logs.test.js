@@ -1,6 +1,40 @@
 'use strict';
 global.console = {log: jest.fn()};
-const {
+jest.mock('./util', () => ({
+  awsPromise: jest.fn(() => Promise.resolve({
+    events: [{
+            logStreamName: '2017/01/21/[$LATEST]7n95f07533954c51930bbca2c41a9bd3',
+            timestamp: 1484993296466,
+            message: 'START RequestId: 8669517b-dfc1-11e6-9194-a91c00587ab1 Version: $LATEST\n',
+            ingestionTime: 1484993296478,
+            eventId: '33116457126014311680193517901450405742299596494768046080'
+        },
+        {
+            logStreamName: '2017/01/21/[$LATEST]7n95f07533954c51930bbca2c41a9bd3',
+            timestamp: 1484993296561,
+            message: 'END RequestId: 8669517b-dfc1-11e6-9194-a91c00587ab1\n',
+            ingestionTime: 1484993296575,
+            eventId: '33116457128132882474053927100013434686184280818575802368'
+        },
+        {
+            logStreamName: '2017/01/21/[$LATEST]7n95f07533954c51930bbca2c41a9bd3',
+            timestamp: 1484993296561,
+            message: 'REPORT RequestId: 8669517b-dfc1-11e6-9194-a91c00587ab1\tDuration: 58.20 ms\tBilled Duration: 100 ms \tMemory Size: 128 MB\tMax Memory Used: 29 MB\t\n',
+            ingestionTime: 1484993296575,
+            eventId: '33116457128132882474053927100013434686184280818575802369'
+        }
+    ],
+    searchedLogStreams: [{
+        logStreamName: '2017/01/21/[$LATEST]7n95f07533954c51930bbca2c41a9bd3',
+        searchedCompletely: true
+    }]
+  })),
+  formatTimestamp: jest.fn(() => '2017-01-01 12:00:00'),
+  delay: jest.fn(() => () => Promise.reject())
+}));
+const util = require('./util');
+
+let {
   getRequestIdFromMessage,
   fetchLogs,
   logEvent
@@ -11,7 +45,7 @@ const event1 = {
   message: 'A message with no requestId'
 };
 const startEvent = {
-  logStreamName: '2017/01/21/[$LATEST]6a61f07533954c51930bbbo2c41a9bd3',
+  logStreamName: '2017/01/21/[$LATEST]7n95f07533954c51930bbca2c41a9bd3',
   timestamp: 1484993309128,
   message: 'START RequestId: 8p581cde-dac1-17e6-862a-538093381d5d Version: $LATEST\n',
   ingestionTime: 1484993309156,
@@ -42,6 +76,14 @@ describe('logs', () => {
 
     it('should return null when no requestId is found', () => {
       expect(getRequestIdFromMessage(event1.message)).toBe(null);
+    });
+  });
+
+  describe('fetchLogs', () => {
+    it('will call awsPromise and delay', () => {
+      fetchLogs({}, '/aws/lambda/name', Date.now());
+      expect(util.awsPromise).toHaveBeenCalled();
+      expect(util.delay).toHaveBeenCalled();
     });
   });
 });
