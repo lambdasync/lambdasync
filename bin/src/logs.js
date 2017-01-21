@@ -4,7 +4,7 @@ const aws = require('./aws.js');
 const {getSettings} = require('./settings.js');
 const {awsPromise, delay, formatTimestamp} = require('./util.js');
 
-const LOG_DELAY = 500000;
+const LOG_DELAY = 5000;
 const requestIdRe = /([0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12})/;
 
 // When `lambdasync logs` is called set a start timestamp (Date.now()) and send it as startTime
@@ -17,17 +17,9 @@ function logs(settings) {
 
   // Request logs from this timestamp
   // We will update this over time with the timestamp of the latest log item
-  let startTime = Date.now() - (1000*60);
+  let startTime = Date.now();
 
-  fetchLogs({api, logGroupName, startTime})
-    .then(res => {
-      if (res && res.events) {
-        res.events.forEach(logEvent);
-      }
-    })
-    .catch(err => console.log(err));
-
-
+  fetchLogs({api, logGroupName, startTime});
 }
 
 function getRequestIdFromMessage(message) {
@@ -46,7 +38,16 @@ function getRequestIdFromMessage(message) {
 function fetchLogs({api, logGroupName, startTime}) {
   return awsPromise(api, 'filterLogEvents', {
     logGroupName, startTime
-  });
+  })
+    .then(res => {
+      if (res && res.events && res.events.length > 0) {
+        startTime = res.events[res.events.length - 1].timestamp + 1;
+        return res.events.forEach(logEvent);
+      }
+    })
+    .then(delay(LOG_DELAY))
+    .then(() => fetchLogs({api, logGroupName, startTime}))
+    .catch(err => console.log(err));
 }
 
 function logEvent({timestamp, message}) {
@@ -58,7 +59,7 @@ function logEvent({timestamp, message}) {
     return console.log(chalk.cyan(msg));
   }
 
-  if (message.indexOf('END') === 0) {
+  if (message.indexOf('END') === 0 || message.indexOf('REPORT') === 0) {
     return console.log(chalk.magenta(msg));
   }
 
