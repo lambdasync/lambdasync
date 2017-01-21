@@ -56,6 +56,7 @@ function logEvent({timestamp, message}) {
   let msg = `${time} ${requestId} - ${message}`;
 
   if (message.indexOf('START') === 0) {
+    var str = chalk.cyan(msg);
     return console.log(chalk.cyan(msg));
   }
 
@@ -63,10 +64,22 @@ function logEvent({timestamp, message}) {
     return console.log(chalk.magenta(msg));
   }
 
-  // Is this always where the interesting part always starts if it's not a START or END log?
-  msg = `${time} ${requestId} - ${message.substring(62)}`;
+  // Is this always where the interesting part always starts if it's not a START/END/REPORT log?
+  const cutOff = 62;
+  if (message.length > cutOff) {
+    msg = `${time} ${requestId} - ${message.substring(62)}`;
+  } else {
+    msg = `${time} ${requestId} - ${message}`;
+  }
+
 
   console.log(msg);
 }
 
-module.exports = logs;
+exports = module.exports = {};
+exports.logs = logs;
+if (process.env.NODE_ENV === 'test') {
+  exports.getRequestIdFromMessage = getRequestIdFromMessage;
+  exports.fetchLogs = fetchLogs;
+  exports.logEvent = logEvent;
+}

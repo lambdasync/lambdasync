@@ -15,7 +15,7 @@ const {makeLambdaRole} = require('./iam.js');
 const scaffold = require('./scaffold.js');
 const {config, variable} = require('./config.js');
 const devServer = require('./devserver');
-const logs = require('./logs');
+const {logs} = require('./logs');
 
 const command = minimist(process.argv.slice(2), {
   alias: {

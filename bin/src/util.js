@@ -214,5 +214,5 @@ exports.formatTimestamp = formatTimestamp;
 exports.isDate = isDate;
 
 if (process.env.NODE_ENV === 'test') {
-    exports.getProductionDeps = getProductionDeps;
+  exports.getProductionDeps = getProductionDeps;
 }
