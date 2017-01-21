@@ -3,7 +3,8 @@ const path = require('path');
 const cp = require('child_process');
 const marked = require('marked');
 const TerminalRenderer = require('marked-terminal');
-const {LAMBDASYNC_SRC} = require('./constants.js');
+
+const {LAMBDASYNC_SRC} = require('./constants');
 
 marked.setOptions({
   // Define custom renderer

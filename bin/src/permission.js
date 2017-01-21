@@ -1,5 +1,5 @@
-const aws = require('./aws.js');
-const {awsPromise, makeLambdaPolicyArn} = require('./util.js');
+const aws = require('./aws');
+const {awsPromise, makeLambdaPolicyArn} = require('./util');
 
 function getGateway(settings) {
   const AWS = aws(settings);

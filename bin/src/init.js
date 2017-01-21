@@ -2,10 +2,10 @@ const path = require('path');
 const inquirer = require('inquirer');
 const ini = require('ini');
 
-const {readFile, writeFile} = require('./file.js');
-const {markdown, addInputDefault, handleGenericFailure} = require('./util.js');
-const {getAccountId} = require('./iam.js');
-const {AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH} = require('./constants.js');
+const {readFile, writeFile} = require('./file');
+const {markdown, addInputDefault, handleGenericFailure} = require('./util');
+const {getAccountId} = require('./iam');
+const {AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH} = require('./constants');
 const {
   updateSettings,
   getAwsSettings,

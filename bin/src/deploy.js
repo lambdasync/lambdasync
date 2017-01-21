@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const inquirer = require('inquirer');
 const {description} = require('../../package.json');
-const {promisedExec, stripLambdaVersion, markdown, markdownProperty} = require('./util.js');
-const {updateSettings} = require('./settings.js');
+const {promisedExec, stripLambdaVersion, markdown, markdownProperty} = require('./util');
+const {updateSettings} = require('./settings');
 const {
   LAMBDASYNC_BIN,
   LAMBDASYNC_SRC,

@@ -1,9 +1,10 @@
 const path = require('path');
-const aws = require('./aws.js');
-const {awsPromise, logMessage, delay} = require('./util.js');
-const {readFile} = require('./file.js');
-const {LAMBDASYNC_ROOT, LAMBDASYNC_EXEC_ROLE, LAMBDASYNC_INVOKE_POLICY} = require('./constants.js');
-const {updateSettings, getSettings} = require('./settings.js');
+
+const aws = require('./aws');
+const {awsPromise, logMessage, delay} = require('./util');
+const {readFile} = require('./file');
+const {LAMBDASYNC_ROOT, LAMBDASYNC_EXEC_ROLE, LAMBDASYNC_INVOKE_POLICY} = require('./constants');
+const {updateSettings, getSettings} = require('./settings');
 
 const invokePolicyPath = path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'invoke-policy.json');
 const trustPolicyPath = path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'trust-policy.json');

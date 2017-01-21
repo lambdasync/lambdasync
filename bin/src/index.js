@@ -4,16 +4,16 @@ const path = require('path');
 const minimist = require('minimist');
 
 const {version} = require('../../package.json');
-const {getSettings} = require('./settings.js');
-const maybeInit = require('./init.js');
-const deploy = require('./deploy.js');
-const {chainData} = require('./util.js');
+const {getSettings} = require('./settings');
+const maybeInit = require('./init');
+const deploy = require('./deploy');
+const {chainData} = require('./util');
 const {setupApiGateway, deployApi} = require('./gateway');
-const {setLambdaPermission} = require('./permission.js');
-const {callApi} = require('./call-api.js');
-const {makeLambdaRole} = require('./iam.js');
-const scaffold = require('./scaffold.js');
-const {config, variable} = require('./config.js');
+const {setLambdaPermission} = require('./permission');
+const {callApi} = require('./call-api');
+const {makeLambdaRole} = require('./iam');
+const scaffold = require('./scaffold');
+const {config, variable} = require('./config');
 const devServer = require('./devserver');
 const {logs} = require('./logs');
 

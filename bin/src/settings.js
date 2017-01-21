@@ -1,9 +1,9 @@
 const path = require('path');
 const ini = require('ini');
 
-const {SETTINGS_FILE, AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH} = require('./constants.js');
-const {readFile, writeFile} = require('./file.js');
-const {jsonStringify} = require('./transform.js');
+const {SETTINGS_FILE, AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH} = require('./constants');
+const {readFile, writeFile} = require('./file');
+const {jsonStringify} = require('./transform');
 
 const settingsInput = [
   'profileName', // Name of local aws-cli profile, default lambdasync

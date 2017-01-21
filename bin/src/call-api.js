@@ -1,6 +1,6 @@
-const aws = require('./aws.js');
-const {getSettings} = require('./settings.js');
-const {awsPromise} = require('./util.js');
+const aws = require('./aws');
+const {getSettings} = require('./settings');
+const {awsPromise} = require('./util');
 
 let AWS;
 
