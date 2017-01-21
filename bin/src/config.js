@@ -1,11 +1,11 @@
-const aws = require('./aws.js');
+const aws = require('./aws');
 const {
   awsPromise,
   handleGenericFailure,
   markdown,
   mustacheLite,
   parseCommandArgs
-} = require('./util.js');
+} = require('./util');
 
 function config(settings, args) {
   const argCount = Array.isArray(args) ? args.length : 0;

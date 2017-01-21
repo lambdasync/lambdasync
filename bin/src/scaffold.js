@@ -4,9 +4,9 @@ const validate = require('validate-npm-package-name');
 const ncp = require('ncp').ncp;
 const spawn = require('cross-spawn');
 
-const maybeInit = require('./init.js');
-const {mustacheLite, markdown} = require('./util.js');
-const {LAMBDASYNC_ROOT} = require('./constants.js');
+const maybeInit = require('./init');
+const {mustacheLite, markdown} = require('./util');
+const {LAMBDASYNC_ROOT} = require('./constants');
 
 const validTemplatenames = ['vanilla', 'express'];
 
