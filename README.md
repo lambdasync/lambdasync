@@ -107,6 +107,13 @@ A secret can be removed with:
 > Note: Prior to 2.0 secrets were saved as API Gateway stage variables, because Lambda had no environment variable support.
 
 
+## Logging
+Each request, and anything you log with `console.log` will be logged to AWS CloudWatch. If you don't want to have to login to the AWS console to see your logs you can use:
+
+`lambdasync logs`
+
+This will start outputting any new CloudWatch log events to your console.
+
 ## Config
 
 `lambdasync config`
