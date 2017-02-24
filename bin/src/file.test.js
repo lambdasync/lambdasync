@@ -17,7 +17,8 @@ beforeEach(() => {
 });
 
 afterEach(done => {
-  rimraf(TEST_DIR, done);
+  rimraf(TEST_DIR, () => rimraf(MISSING_DIR, done));
+
 });
 
 describe('file', () => {
@@ -49,9 +50,9 @@ describe('file', () => {
       writeFile(TEST_FILE_CREATE, Ash, JSON.stringify)
         .then(res => expect(JSON.parse(res)).toEqual(Ash));
     });
-    it('expect writing file to missing directory to fail', () => {
-      writeFile(path.join(MISSING_DIR, 'a-file.json'), Ash)
-        .catch(err => expect(err).toBeTruthy());
+    it('expect writing file to missing directory to succeed', () => {
+      writeFile(path.join(MISSING_DIR, 'a-file.json'), Ash, JSON.stringify)
+        .then(res => expect(JSON.parse(res)).toEqual(Ash));
     });
     it('expect failed transforms to reject', () => {
       const Williams = Object.assign({}, Ash);

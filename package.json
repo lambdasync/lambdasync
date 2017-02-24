@@ -36,6 +36,7 @@
     "marked": "0.3.6",
     "marked-terminal": "1.6.1",
     "minimist": "1.2.0",
+    "mkdirp": "0.5.1",
     "ncp": "2.0.0",
     "rimraf": "2.5.4",
     "user-home": "2.0.0",
