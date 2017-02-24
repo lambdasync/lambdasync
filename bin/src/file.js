@@ -1,3 +1,4 @@
+'use strict';
 const fs = require('fs');
 
 function readFile(path, transform = input => input) {
