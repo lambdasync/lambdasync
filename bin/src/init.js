@@ -23,7 +23,7 @@ const {
 function init() {
   return getSettings()
     .then(settings => {
-      if (settings.profileName) {
+      if (settings.lambdaName && settings.profileName && settings.accountId) {
         console.log(markdown({
           templatePath: 'markdown/init-twice.md'
         }));
