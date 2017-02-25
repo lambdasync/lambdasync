@@ -160,7 +160,9 @@ function variable(settings, operation, args) {
         }
       }
     })
-    .catch(handleGenericFailure);
+    .catch(() => console.log(markdown({
+      templatePath: 'markdown/secret-with-no-function.md'
+    })));
 }
 
 function makeSecretMarkdown(list, heading, label) {

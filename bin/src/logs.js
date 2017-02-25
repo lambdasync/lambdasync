@@ -2,7 +2,13 @@ const chalk = require('chalk');
 
 const aws = require('./aws');
 const {getSettings} = require('./settings');
-const {awsPromise, delay, formatTimestamp} = require('./util');
+const {
+  awsPromise,
+  delay,
+  formatTimestamp,
+  functionExists,
+  markdown
+} = require('./util');
 
 const LOG_DELAY = 5000;
 const requestIdRe = /([0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12})/;
@@ -12,14 +18,24 @@ const requestIdRe = /([0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{1
 
 function logs(settings) {
   const AWS = aws(settings);
-  const api = new AWS.CloudWatchLogs();
-  const logGroupName = `/aws/lambda/${settings.lambdaName}`;
 
-  // Request logs from this timestamp
-  // We will update this over time with the timestamp of the latest log item
-  let startTime = Date.now();
+  // Make sure we have a deployed function first
+  const lambda = new AWS.Lambda();
+  functionExists(lambda, settings.lambdaName)
+    .then(functionExists => {
+      if (!functionExists) {
+        return console.log(markdown({
+          templatePath: 'markdown/logs-with-no-function.md'
+        }));
+      }
+      const api = new AWS.CloudWatchLogs();
+      const logGroupName = `/aws/lambda/${settings.lambdaName}`;
 
-  fetchLogs({api, logGroupName, startTime});
+      // Request logs from this timestamp
+      // We will update this over time with the timestamp of the latest log item
+      let startTime = Date.now();
+      fetchLogs({api, logGroupName, startTime});
+    });
 }
 
 function getRequestIdFromMessage(message) {

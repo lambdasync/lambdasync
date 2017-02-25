@@ -2,7 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const inquirer = require('inquirer');
 const {description} = require('../../package.json');
-const {promisedExec, stripLambdaVersion, markdown, markdownProperty} = require('./util');
+const {
+  promisedExec,
+  stripLambdaVersion,
+  markdown,
+  markdownProperty,
+  functionExists
+} = require('./util');
 const {updateSettings} = require('./settings');
 const {
   LAMBDASYNC_BIN,
@@ -21,7 +27,7 @@ function deploy(deploySettings) {
   const AWS = aws(settings);
   lambda = new AWS.Lambda();
 
-  return functionExists(settings.lambdaName)
+  return functionExists(lambda, settings.lambdaName)
     .then(functionExists => {
       // If function doesn't already exist, or if it was already deployed
       // by lambdasync lets just deploy it
@@ -72,23 +78,6 @@ function handleSuccess(result) {
       }));
       return settings;
     });
-}
-
-function functionExists(functionName) {
-  return new Promise((resolve, reject) => {
-    const params = {
-      FunctionName: functionName
-    };
-    lambda.getFunction(params, err => {
-      if (err) {
-        if (err.toString().includes('ResourceNotFoundException')) {
-          return resolve(false);
-        }
-        return reject(err);
-      }
-      return resolve(true);
-    });
-  });
 }
 
 function zip() {
