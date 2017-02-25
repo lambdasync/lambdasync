@@ -1,4 +1,7 @@
+'use strict';
 const fs = require('fs');
+const path = require('path');
+const mkdirp = require('mkdirp');
 
 function readFile(path, transform = input => input) {
   return new Promise((resolve, reject) => {
@@ -15,7 +18,7 @@ function readFile(path, transform = input => input) {
   });
 }
 
-function writeFile(path, obj, transform = input => input.toString()) {
+function writeFile(filePath, obj, transform = input => input.toString()) {
   return new Promise((resolve, reject) => {
     let content = '';
     try {
@@ -24,11 +27,14 @@ function writeFile(path, obj, transform = input => input.toString()) {
       return reject(err);
     }
 
-    fs.writeFile(path, content, 'utf8', err => {
-      if (err) {
-        return reject(err);
-      }
-      return resolve(content);
+    // Make sure the path that we want to write to exists
+    mkdirp(path.dirname(filePath), () => {
+      fs.writeFile(filePath, content, 'utf8', err => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(content);
+      });
     });
   });
 }
