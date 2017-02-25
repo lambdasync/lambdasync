@@ -194,6 +194,23 @@ const chainData = fn =>
 
 const startWith = data => Promise.resolve(data);
 
+function functionExists(api, functionName) {
+  return new Promise((resolve, reject) => {
+    const params = {
+      FunctionName: functionName
+    };
+    api.getFunction(params, err => {
+      if (err) {
+        if (err.toString().includes('ResourceNotFoundException')) {
+          return resolve(false);
+        }
+        return reject(err);
+      }
+      return resolve(true);
+    });
+  });
+}
+
 exports = module.exports = {};
 exports.promisedExec = promisedExec;
 exports.handleGenericFailure = handleGenericFailure;
@@ -213,6 +230,7 @@ exports.logger = logger;
 exports.logMessage = logMessage;
 exports.formatTimestamp = formatTimestamp;
 exports.isDate = isDate;
+exports.functionExists = functionExists;
 
 if (process.env.NODE_ENV === 'test') {
   exports.getProductionDeps = getProductionDeps;
