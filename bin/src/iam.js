@@ -54,7 +54,8 @@ function checkForExistingRoles(settings) {
     .then(res => updateSettings({
       lambdaPolicy: res.Policy.Arn
     }))
-    .then(getSettings);
+    .then(getSettings)
+    .catch(() => settings);
 }
 
 function attachPolicy(settings) {
