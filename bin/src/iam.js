@@ -67,7 +67,8 @@ function createDynamoDbPolicy(settings, tableName) {
       });
       return updateSettings({
         dynamoDbTables: tables
-      });
+      })
+        .then(() => policyArn);
     });
 }
 
@@ -116,14 +117,14 @@ function checkForExistingPolicy(settings, policyArn) {
     .catch(() => ({}));
 }
 
-function attachPolicy(settings) {
+function attachPolicy(settings, policyName) {
   const AWS = aws(settings);
   const api = new AWS.IAM();
   const {lambdaRole, lambdaPolicy} = settings;
 
   return awsPromise(api, 'attachRolePolicy', {
     RoleName: getRoleNameFromArn(lambdaRole),
-    PolicyArn: lambdaPolicy
+    PolicyArn: policyName || lambdaPolicy
   })
     .then(() => settings);
 }
@@ -163,8 +164,13 @@ function makeLambdaRole(settings) {
     });
 }
 
+function setupDynamoDbTablePolicy(settings, tableName) {
+  return createDynamoDbPolicy(settings, tableName)
+    .then(policyArn => attachPolicy(settings, policyArn));
+}
+
 module.exports = {
   getAccountId,
   makeLambdaRole,
-  createDynamoDbPolicy
+  setupDynamoDbTablePolicy
 };
