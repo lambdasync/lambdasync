@@ -45,16 +45,25 @@ function createDynamoDbPolicy(settings, tableName) {
     return JSON.parse(template);
   }
 
-  return readFile(dynamodbPolicyPath, transform)
-    .then(policy => awsPromise(api, 'createPolicy', {
-      PolicyName: `${LAMBDASYNC_DYNAMODB_POLICY}-${tableName}`,
-      PolicyDocument: JSON.stringify(policy)
-    }))
+  return checkForExistingPolicy(settings, `arn:aws:iam::${accountId}:policy/${LAMBDASYNC_DYNAMODB_POLICY}-${tableName}`)
     .then(res => {
+      // Policy already exists
+      if (res.Arn) {
+        return res.Arn;
+      }
+
+      return readFile(dynamodbPolicyPath, transform)
+        .then(policy => awsPromise(api, 'createPolicy', {
+          PolicyName: `${LAMBDASYNC_DYNAMODB_POLICY}-${tableName}`,
+          PolicyDocument: JSON.stringify(policy)
+        }))
+        .then(res => res.Policy.Arn);
+    })
+    .then(policyArn => {
       let tables = settings.dynamoDbTables || [];
       tables.push({
         table: tableName,
-        policy: res.Policy.Arn
+        policy: policyArn
       });
       return updateSettings({
         dynamoDbTables: tables
@@ -95,6 +104,16 @@ function checkForExistingRoles(settings) {
     }))
     .then(getSettings)
     .catch(() => settings);
+}
+
+function checkForExistingPolicy(settings, policyArn) {
+  const AWS = aws(settings);
+  const api = new AWS.IAM();
+
+  return awsPromise(api, 'getPolicy', {
+    PolicyArn: policyArn
+  })
+    .catch(() => ({}));
 }
 
 function attachPolicy(settings) {
