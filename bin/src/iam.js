@@ -1,13 +1,19 @@
 const path = require('path');
 
 const aws = require('./aws');
-const {awsPromise, logMessage, delay} = require('./util');
+const {awsPromise, logMessage, delay, mustacheLite} = require('./util');
 const {readFile} = require('./file');
-const {LAMBDASYNC_ROOT, LAMBDASYNC_EXEC_ROLE, LAMBDASYNC_INVOKE_POLICY} = require('./constants');
+const {
+  LAMBDASYNC_ROOT,
+  LAMBDASYNC_EXEC_ROLE,
+  LAMBDASYNC_INVOKE_POLICY,
+  LAMBDASYNC_DYNAMODB_POLICY
+} = require('./constants');
 const {updateSettings, getSettings} = require('./settings');
 
 const invokePolicyPath = path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'invoke-policy.json');
 const trustPolicyPath = path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'trust-policy.json');
+const dynamodbPolicyPath = path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'dynamodb-policy.json');
 
 function createPolicy(settings) {
   const AWS = aws(settings);
@@ -21,6 +27,39 @@ function createPolicy(settings) {
     .then(res => updateSettings({
       lambdaPolicy: res.Policy.Arn
     }));
+}
+
+function createDynamoDbPolicy(settings, tableName) {
+  const AWS = aws(settings);
+  const api = new AWS.IAM();
+
+  const { region, accountId } = settings;
+
+  function transform(content) {
+    const template = mustacheLite(content, {
+      region,
+      accountId,
+      tableName
+    });
+
+    return JSON.parse(template);
+  }
+
+  return readFile(dynamodbPolicyPath, transform)
+    .then(policy => awsPromise(api, 'createPolicy', {
+      PolicyName: `${LAMBDASYNC_DYNAMODB_POLICY}-${tableName}`,
+      PolicyDocument: JSON.stringify(policy)
+    }))
+    .then(res => {
+      let tables = settings.dynamoDbTables || [];
+      tables.push({
+        table: tableName,
+        policy: res.Policy.Arn
+      });
+      return updateSettings({
+        dynamoDbTables: tables
+      });
+    });
 }
 
 function pickAccountIdFromArn(arn) {
@@ -107,5 +146,6 @@ function makeLambdaRole(settings) {
 
 module.exports = {
   getAccountId,
-  makeLambdaRole
+  makeLambdaRole,
+  createDynamoDbPolicy
 };

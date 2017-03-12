@@ -26,7 +26,8 @@ const settingsFields = [
   'apiGatewayUrl',
   'apiGatewayRestApiId',
   'apiGatewayResourceId',
-  'apiGatewayDeploymentId'
+  'apiGatewayDeploymentId',
+  'dynamoDbTables',
 ];
 
 function getSettings() {

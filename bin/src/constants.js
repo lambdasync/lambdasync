@@ -24,6 +24,7 @@ const LAMBDASYNC_SRC = path.join(LAMBDASYNC_ROOT, 'bin', 'src');
 const LAMBDASYNC_BIN = path.join(LAMBDASYNC_ROOT, 'node_modules', '.bin');
 const LAMBDASYNC_EXEC_ROLE = 'LambdasyncExecRole';
 const LAMBDASYNC_INVOKE_POLICY = 'LambdasyncInvokePolicy';
+const LAMBDASYNC_DYNAMODB_POLICY = 'LambdasyncDynamoDBInvokePolicy';
 const API_STAGE_NAME = 'prod';
 const TARGET_ROOT = process.cwd();
 const PROMPT_CONFIRM_OVERWRITE_FUNCTION = {type: 'confirm', name: 'confirm', message: 'Function already exists, overwrite?'};
@@ -52,6 +53,7 @@ module.exports = {
   LAMBDASYNC_BIN,
   LAMBDASYNC_EXEC_ROLE,
   LAMBDASYNC_INVOKE_POLICY,
+  LAMBDASYNC_DYNAMODB_POLICY,
   API_STAGE_NAME,
   TARGET_ROOT,
   PROMPT_CONFIRM_OVERWRITE_FUNCTION,
