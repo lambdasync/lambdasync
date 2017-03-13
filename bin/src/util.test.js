@@ -10,7 +10,8 @@ const {
   awsPromise,
   stripLambdaVersion,
   makeLambdaPolicyArn,
-  parseCommandArgs
+  parseCommandArgs,
+  chainData
 } = require('./util');
 
 describe('util', () => {
@@ -164,6 +165,37 @@ describe('util', () => {
         'memory=128'
       ]);
       expect(res).toMatchSnapshot();
+    });
+  });
+
+  describe('chainData', () => {
+    const p1 = () => Promise.resolve({a: 1});
+    const p2 = () => Promise.resolve({b: 2});
+    const p3 = () => Promise.resolve({a: 3});
+    const p4 = () => Promise.resolve({c: 4, d: 5, e: 6, f: 7});
+
+    it('should pass on data', () => {
+      Promise.resolve({})
+        .then(chainData(p1))
+        .then(chainData(p2))
+        .then(res => expect(res).toEqual({a: 1, b: 2}));
+    });
+
+    it('should let you specify mapper functions', () => {
+      Promise.resolve({})
+        .then(chainData(p1))
+        .then(chainData(p2))
+        .then(chainData(p3, res => ({ wasA: res.a })))
+        .then(res => expect(res).toEqual({a: 1, b: 2, wasA: 3}));
+    });
+
+    it('should let you specify filter arrays', () => {
+      Promise.resolve({})
+        .then(chainData(p1))
+        .then(chainData(p2))
+        .then(chainData(p3, res => ({ wasA: res.a })))
+        .then(chainData(p4, ['c', 'f']))
+        .then(res => expect(res).toEqual({a: 1, b: 2, wasA: 3, c: 4, f: 7}));
     });
   });
 });
