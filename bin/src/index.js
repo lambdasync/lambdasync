@@ -7,7 +7,7 @@ const {version} = require('../../package.json');
 const {getSettings} = require('./settings');
 const maybeInit = require('./init');
 const deploy = require('./deploy');
-const {chainData} = require('./util');
+const {chainData, parseCommandArgs} = require('./util');
 const {setupApiGateway, deployApi} = require('./gateway');
 const {setLambdaPermission} = require('./permission');
 const {callApi} = require('./call-api');
@@ -16,6 +16,7 @@ const scaffold = require('./scaffold');
 const {config, variable} = require('./config');
 const devServer = require('./devserver');
 const {logs} = require('./logs');
+const {handleTableCommand} = require('./dynamodb');
 
 const command = minimist(process.argv.slice(2), {
   alias: {
@@ -29,15 +30,18 @@ function handleCommand(command) {
     return callApi(command);
   }
 
-  if (command._[0] === 'devserver') {
-    const lambdaHandler = require(path.join(process.cwd(), 'index.js')).handler; // eslint-disable-line import/no-dynamic-require
-    return getSettings()
-      .then(settings => devServer(settings, lambdaHandler, command._.slice(1)));
-  }
-
   if (command._[0] === 'logs') {
     return getSettings()
       .then(settings => logs(settings));
+  }
+
+  if (command._[0] === 'table') {
+    return getSettings()
+      .then(settings => handleTableCommand(
+        settings,
+        command._[1],
+        parseCommandArgs(command._.slice(1))
+      ));
   }
 
   if (command._[0] === 'config') {
