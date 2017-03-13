@@ -1,7 +1,7 @@
 const path = require('path');
 
 const aws = require('./aws');
-const {awsPromise, logMessage, delay, mustacheLite} = require('./util');
+const {awsPromise, logMessage, delay, mustacheLite, chainData, startWith} = require('./util');
 const {readFile} = require('./file');
 const {
   LAMBDASYNC_ROOT,
@@ -57,18 +57,7 @@ function createDynamoDbPolicy(settings, tableName) {
           PolicyName: `${LAMBDASYNC_DYNAMODB_POLICY}-${tableName}`,
           PolicyDocument: JSON.stringify(policy)
         }))
-        .then(res => res.Policy.Arn);
-    })
-    .then(policyArn => {
-      let tables = settings.dynamoDbTables || [];
-      tables.push({
-        table: tableName,
-        policy: policyArn
-      });
-      return updateSettings({
-        dynamoDbTables: tables
-      })
-        .then(() => policyArn);
+        .then(res => ({ policyArn: res.Policy.Arn }));
     });
 }
 
@@ -165,8 +154,11 @@ function makeLambdaRole(settings) {
 }
 
 function setupDynamoDbTablePolicy(settings, tableName) {
-  return createDynamoDbPolicy(settings, tableName)
-    .then(policyArn => attachPolicy(settings, policyArn));
+  return startWith({
+    tableName
+  })
+    .then(chainData(() => createDynamoDbPolicy(settings, tableName)))
+    .then(chainData(({policyArn}) => attachPolicy(settings, policyArn)));
 }
 
 module.exports = {

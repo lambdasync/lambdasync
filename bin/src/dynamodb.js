@@ -1,7 +1,7 @@
 const path = require('path');
 
 const aws = require('./aws');
-const {awsPromise, logMessage, delay, mustacheLite} = require('./util');
+const {awsPromise, logMessage, delay, mustacheLite, startWith, chainData} = require('./util');
 const {readFile} = require('./file');
 const {
   LAMBDASYNC_ROOT,
@@ -10,42 +10,53 @@ const {
   LAMBDASYNC_DYNAMODB_POLICY
 } = require('./constants');
 const {updateSettings, getSettings} = require('./settings');
+const {setupDynamoDbTablePolicy} = require('./iam');
 
-function createDynamoDbTable(settings, tableName, attributes = {}) {
+function createDynamoDbTable(settings, tableName) {
+  if (!tableName) {
+    return Promise.reject('You need to specify a table name');
+  }
+
   const AWS = aws(settings);
   const api = new AWS.DynamoDB();
 
-  if (!tableName || !attributes || attributes.length <= 0) {
-    return Promise.reject('tableName and attributes are required input');
-  }
-
-  // The first key will be the primary key
-  const primaryKey = Object.keys(attributes)[0];
-  const KeySchema = {
-    AttributeName: primaryKey,
-    KeyType: 'HASH',
-  };
-
-  const AttributeDefinitions = Object.keys(attributes)
-    .map(AttributeName => ({
-      AttributeName,
-      AttributeType: attributes[AttributeName],
-    }));
-
   return awsPromise(api, 'createTable', {
-    AttributeDefinitions,
-    KeySchema,
+    AttributeDefinitions: [{
+      AttributeName: 'id',
+      AttributeType: 'N',
+    }],
+    KeySchema: [{
+      AttributeName: 'id',
+      KeyType: 'HASH',
+    }],
     ProvisionedThroughput: {
       ReadCapacityUnits: 25, // Free tier limit
       WriteCapacityUnits: 25, // Free tier limit
     },
     TableName: tableName
-  })
-    .then(res => console.log('res', res));
+  });
 }
 
-function handleTableCommand(settings, tableName, attributes = {}) {
-  console.log('handleTableCommand', tableName, attributes);
+function handleTableCommand(settings, tableName) {
+  return startWith({
+    tableName
+  })
+    .then(chainData(
+      () => createDynamoDbTable(settings, tableName),
+      res => ({ tableArn: res.TableDescription.TableArn })
+    ))
+    .then(chainData(
+      () => setupDynamoDbTablePolicy(settings, tableName),
+      res => ({ policyArn: res.policyArn })
+    ))
+    .then(data => {
+      let tables = settings.dynamoDbTables || [];
+      tables.push(data);
+      return updateSettings({
+        dynamoDbTables: tables
+      })
+        .then(() => data);
+    });
 }
 
 module.exports = {
