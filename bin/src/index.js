@@ -30,6 +30,12 @@ function handleCommand(command) {
     return callApi(command);
   }
 
+  if (command._[0] === 'devserver') {
+    const lambdaHandler = require(path.join(process.cwd(), 'index.js')).handler; // eslint-disable-line import/no-dynamic-require
+    return getSettings()
+      .then(settings => devServer(settings, lambdaHandler, command._.slice(1)));
+  }
+
   if (command._[0] === 'logs') {
     return getSettings()
       .then(settings => logs(settings));
