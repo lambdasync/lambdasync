@@ -105,7 +105,7 @@ function getSettingsInput(defaults) {
 }
 
 function persistAwsConfig(conf) {
-  getAwsSettings()
+  return getAwsSettings()
     .then(([credentials, config]) => {
       const persistCredentials = () => {
         const newCredentials = Object.assign({}, credentials);

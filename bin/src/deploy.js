@@ -108,7 +108,7 @@ function createFunction() {
       FunctionName: settings.lambdaName,
       Handler: 'index.handler',
       Role: settings.lambdaRole,
-      Runtime: 'nodejs4.3', /* required */
+      Runtime: 'nodejs6.10', /* required */
       Description: description, // package.json description
       MemorySize: 128, // default
       Publish: true,

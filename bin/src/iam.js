@@ -74,7 +74,8 @@ function getAccountId(settings) {
   return awsPromise(api, 'getUser')
     .then(res => updateSettings({
       accountId: pickAccountIdFromArn(res.User.Arn)
-    }));
+    }))
+    .catch(err => console.log(err));
 }
 
 function checkForExistingRoles(settings) {
