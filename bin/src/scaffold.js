@@ -2,10 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const validate = require('validate-npm-package-name');
 const ncp = require('ncp').ncp;
-const spawn = require('cross-spawn');
 
 const maybeInit = require('./init');
-const {mustacheLite, markdown} = require('./util');
+const {mustacheLite, markdown, copyPackageJson} = require('./util');
 const {LAMBDASYNC_ROOT} = require('./constants');
 
 const validTemplatenames = ['vanilla', 'express'];
@@ -59,27 +58,6 @@ function copyTemplateDir(templateDir, targetDir) {
     ncp(templateDir, targetDir, packageJsonFilter, err => {
       if (err) {
         return reject(err);
-      }
-      return resolve();
-    });
-  });
-}
-
-function copyPackageJson(templateDir, targetDir, data) {
-  // Copy over package.json with name replaced
-  const jsonTemplate = fs.readFileSync(path.join(templateDir, 'package.json'), 'utf8');
-  return fs.writeFileSync(
-    path.join(targetDir, 'package.json'),
-    mustacheLite(jsonTemplate, data)
-  );
-}
-
-function install() {
-  return new Promise((resolve, reject) => {
-    var child = spawn('npm', ['install'], {stdio: 'inherit'});
-    child.on('close', code => {
-      if (code !== 0) {
-        return reject('npm install failed');
       }
       return resolve();
     });

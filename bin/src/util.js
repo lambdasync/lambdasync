@@ -1,10 +1,13 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const cp = require('child_process');
 const marked = require('marked');
 const TerminalRenderer = require('marked-terminal');
+const spawn = require('cross-spawn');
 
 const {LAMBDASYNC_SRC} = require('./constants');
+const {readFile} = require('./file');
 
 marked.setOptions({
   // Define custom renderer
@@ -211,6 +214,34 @@ function functionExists(api, functionName) {
   });
 }
 
+function copyPackageJson(templateDir, targetDir, data) {
+  // Copy over package.json with name replaced
+  const jsonTemplate = fs.readFileSync(path.join(templateDir, 'package.json'), 'utf8');
+  return fs.writeFileSync(
+    path.join(targetDir, 'package.json'),
+    mustacheLite(jsonTemplate, data)
+  );
+}
+
+function npmInstall(flags = '') {
+  return new Promise((resolve, reject) => {
+    var child = spawn('npm', ['install', flags], {stdio: 'inherit'});
+    child.on('close', code => {
+      if (code !== 0) {
+        return reject('npm install failed');
+      }
+      return resolve();
+    });
+  });
+}
+
+function hashPackageDependencies(path) {
+  return readFile(path, JSON.parse)
+    .then(({dependencies}) => {
+      return crypto.createHash('md5').update(JSON.stringify(dependencies)).digest('hex');
+    });
+}
+
 exports = module.exports = {};
 exports.promisedExec = promisedExec;
 exports.handleGenericFailure = handleGenericFailure;
@@ -231,6 +262,9 @@ exports.logMessage = logMessage;
 exports.formatTimestamp = formatTimestamp;
 exports.isDate = isDate;
 exports.functionExists = functionExists;
+exports.copyPackageJson = copyPackageJson;
+exports.npmInstall = npmInstall;
+exports.hashPackageDependencies = hashPackageDependencies;
 
 if (process.env.NODE_ENV === 'test') {
   exports.getProductionDeps = getProductionDeps;
