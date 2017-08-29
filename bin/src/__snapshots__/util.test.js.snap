@@ -1,3 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
 exports[`util addInputDefault should add defaults to inquirer input 1`] = `"test"`;
 
 exports[`util makeLambdaPolicyArn should make a policy ARN from FunctionArn and gateway id 1`] = `"arn:aws:execute-api:eu-west-1:202020202020:4ghl2mfk30/*/*/*"`;

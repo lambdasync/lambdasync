@@ -10,7 +10,8 @@ const {
   awsPromise,
   stripLambdaVersion,
   makeLambdaPolicyArn,
-  parseCommandArgs
+  parseCommandArgs,
+  functionExists
 } = require('./util');
 
 describe('util', () => {
@@ -164,6 +165,39 @@ describe('util', () => {
         'memory=128'
       ]);
       expect(res).toMatchSnapshot();
+    });
+  });
+
+  describe('functionExists', () => {
+    const validFunctions = ['foo', 'bar'];
+    const mockApi = {
+      getFunction: function getFunction({ FunctionName }, cb) {
+        if (validFunctions.indexOf(FunctionName) !== -1) {
+          return cb(null, FunctionName);
+        }
+        if (FunctionName === 'error') {
+          return cb(new Error('Generic Error'));
+        }
+        return cb(new Error('ResourceNotFoundException'));
+      },
+    };
+
+    it('should return true for existing functions', () => {
+      expect.assertions(2);
+      functionExists(mockApi, 'foo')
+        .then(res => expect(res).toBe(true));
+      functionExists(mockApi, 'bar')
+        .then(res => expect(res).toBe(true));
+    });
+    it('should catch ResourceNotFoundExceptions and return false for non existant functions', () => {
+      expect.assertions(1);
+      functionExists(mockApi, 'baz')
+        .then(res => expect(res).toBe(false));
+    });
+    it('should reject the promise on unknown errors', () => {
+      expect.assertions(1);
+      functionExists(mockApi, 'error')
+        .catch(err => expect(err).toBeDefined());
     });
   });
 });
