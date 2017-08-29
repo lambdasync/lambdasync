@@ -15,7 +15,8 @@ const {
   makeLambdaPolicyArn,
   parseCommandArgs,
   functionExists,
-  copyPackageJson
+  copyPackageJson,
+  hashPackageDependencies
 } = require('./util');
 
 describe('util', () => {
@@ -244,4 +245,21 @@ lambdasync
       expect(JSON.parse(fs.readFileSync(path.join(TARGET_DIR, 'package.json'))).name).toBe(name);
     })
   });
+
+  describe('hashPackageDependencies', () => {
+    const packageJson1 = { name: 'packageJson1', dependencies: { pony: '*', uniwhal: '1.0.0'}};
+    const packageJson2 = { name: 'packageJson2', dependencies: { pony: '*', uniwhal: '1.0.0'}};
+    const packageJson3 = { name: 'packageJson3', dependencies: { pony: '0.1.1', uniwhal: '1.0.0'}};
+    it('creates the same hash given the same input', () => {
+      expect(hashPackageDependencies(packageJson1)).toEqual(hashPackageDependencies(packageJson1));
+    });
+
+    it('creates the same hash given the input with the same dependencies', () => {
+      expect(hashPackageDependencies(packageJson1)).toEqual(hashPackageDependencies(packageJson2));
+    });
+
+    it('creates different hashes given different dependencies', () => {
+      expect(hashPackageDependencies(packageJson1)).not.toEqual(hashPackageDependencies(packageJson3));
+    });
+  })
 });

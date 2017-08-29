@@ -234,11 +234,11 @@ function npmInstall(flags = '') {
   });
 }
 
-function hashPackageDependencies(path) {
-  return readFile(path, JSON.parse)
-    .then(({dependencies}) => {
-      return crypto.createHash('md5').update(JSON.stringify(dependencies)).digest('hex');
-    });
+function hashPackageDependencies({dependencies = {}}) {
+  if (!dependencies) {
+    return null;
+  }
+  return crypto.createHash('md5').update(JSON.stringify(dependencies)).digest('hex');
 }
 
 exports = module.exports = {};

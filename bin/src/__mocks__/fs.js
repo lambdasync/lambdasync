@@ -20,8 +20,16 @@ function writeFileSync(path, content) {
   return;
 }
 
+function readFile(path, cb) {
+  if (mockFiles[path]) {
+    return cb(null, mockFiles[path]);
+  }
+  return cb(new Error(`ENOENT: no such file or directory, open ${path}`))
+}
+
 fs.__setMockFiles = __setMockFiles;
 fs.readFileSync = readFileSync;
 fs.writeFileSync = writeFileSync;
+fs.readFile = readFile;
 
 module.exports = fs;
