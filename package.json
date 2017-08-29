@@ -10,7 +10,7 @@
     "lambdasync": "bin/src/index.js"
   },
   "scripts": {
-    "test": "jest --coverage --watch"
+    "test": "NODE_ENV=test jest --coverage --watch"
   },
   "repository": {
     "type": "git",
