@@ -1,4 +1,7 @@
 'use strict';
+const path = require('path');
+jest.mock('fs');
+const fs = require('fs');
 const {
   promisedExec,
   mustacheLite,
@@ -11,7 +14,8 @@ const {
   stripLambdaVersion,
   makeLambdaPolicyArn,
   parseCommandArgs,
-  functionExists
+  functionExists,
+  copyPackageJson
 } = require('./util');
 
 describe('util', () => {
@@ -52,6 +56,22 @@ describe('util', () => {
   });
 
   describe('markdown', () => {
+    const markdownPath = path.join(__dirname, '..', 'test', 'markdown.md');
+    fs.__setMockFiles({
+[markdownPath]: `# Markdown test
+=====================================
+Properties
+=====================================
+**First property**: \`{{firstProperty}}\`
+**Second property**: \`{{secondProperty}}\`
+
+## Next
+\`\`\`
+cd {{name}}
+lambdasync
+\`\`\`
+`
+    });
     it('should produce styled markdown output from string', () => {
       const result = markdown({
         templateString: `**Hello {{you}}!** My name is _{{me}}_`,
@@ -199,5 +219,29 @@ describe('util', () => {
       functionExists(mockApi, 'error')
         .catch(err => expect(err).toBeDefined());
     });
+  });
+
+  describe('copyPackageJson', () => {
+    const SOURCE_DIR = path.join(__dirname, '..', 'test');
+    const TARGET_DIR = path.join(__dirname, '..', 'test', 'new');
+
+    it('Should move package.json from source file to target file', () => {
+      const mockJson = JSON.stringify({ name: 'w00t', version: '0.0.1'});
+      fs.__setMockFiles({
+        [path.join(SOURCE_DIR, 'package.json')]: mockJson
+      });
+      copyPackageJson(SOURCE_DIR, TARGET_DIR);
+      expect(fs.readFileSync(path.join(TARGET_DIR, 'package.json'))).toBe(mockJson);
+    });
+
+    it('Should replace fields in the JSON with props from the optional third argument', () => {
+      const mockJson = JSON.stringify({ name: '{{name}}', version: '0.0.1'});
+      const name = 'm00t';
+      fs.__setMockFiles({
+        [path.join(SOURCE_DIR, 'package.json')]: mockJson
+      });
+      copyPackageJson(SOURCE_DIR, TARGET_DIR, { name });
+      expect(JSON.parse(fs.readFileSync(path.join(TARGET_DIR, 'package.json'))).name).toBe(name);
+    })
   });
 });

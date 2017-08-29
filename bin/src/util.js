@@ -215,7 +215,6 @@ function functionExists(api, functionName) {
 }
 
 function copyPackageJson(templateDir, targetDir, data) {
-  // Copy over package.json with name replaced
   const jsonTemplate = fs.readFileSync(path.join(templateDir, 'package.json'), 'utf8');
   return fs.writeFileSync(
     path.join(targetDir, 'package.json'),
