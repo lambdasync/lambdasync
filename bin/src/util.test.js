@@ -15,7 +15,8 @@ const {
   functionExists,
   copyPackageJson,
   hashPackageDependencies,
-  logger
+  logger,
+  handleGenericFailure
 } = require('./util');
 
 describe('util', () => {
@@ -244,5 +245,20 @@ lambdasync
       logger('herro')('there');
       expect(global.console.log).toHaveBeenCalled();
     });
+  });
+
+  describe('handleGenericFailure', () => {
+    const mockedMessage = 'mock';
+    beforeEach(() => {
+      global.console.log = jest.fn();
+      fs.__setMockFiles({
+        [path.join(__dirname, 'markdown', 'generic-fail.md')]: mockedMessage,
+      });
+    });
+    it('should console.log the generic error message', () => {
+      handleGenericFailure();
+      expect(global.console.log).toHaveBeenCalled();
+      expect(global.console.log.mock.calls[0][0]).toContain(mockedMessage);
+    })
   });
 });
