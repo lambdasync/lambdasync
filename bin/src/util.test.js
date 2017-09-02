@@ -44,18 +44,6 @@ describe('util', () => {
     });
   });
 
-  describe('mustacheLite', () => {
-    it('should replace matching params', () => {
-      const result = mustacheLite(`Hello, {{you}}! My name is {{me}}!`, {you:'Foo', me: 'Bar'});
-      expect(result).toMatchSnapshot();
-    });
-
-    it('should not replace unmatched params', () => {
-      const result = mustacheLite(`Hello, {{you}}! My name is {{me}}!`, {me: 'Bar'});
-      expect(result).toMatchSnapshot();
-    });
-  });
-
   describe('markdown', () => {
     const markdownPath = path.join(__dirname, '..', 'test', 'markdown.md');
     fs.__setMockFiles({
@@ -113,26 +101,6 @@ lambdasync
         { type: 'input', name: 'lambdaName', message: 'Function name' }
       );
       expect(result.default).toMatchSnapshot();
-    });
-  });
-
-  describe('getProductionDeps', () => {
-    it('should get a list of production dependencies', () => {
-      getProductionDeps()
-        .then(res => {
-          expect(typeof res).toBe('object');
-          expect(typeof res['aws-sdk']).toBe('object');
-        });
-    });
-  });
-
-  describe('getProductionModules', () => {
-    it('should get a flat list of production dependencies', () => {
-      getProductionModules()
-        .then(res => {
-          expect(Array.isArray(res)).toBe(true);
-          expect(res.includes('uuid')).toBe(true);
-        })
     });
   });
 
@@ -261,5 +229,5 @@ lambdasync
     it('creates different hashes given different dependencies', () => {
       expect(hashPackageDependencies(packageJson1)).not.toEqual(hashPackageDependencies(packageJson3));
     });
-  })
+  });
 });
