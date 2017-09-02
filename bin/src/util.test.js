@@ -8,15 +8,14 @@ const {
   markdown,
   markdownProperty,
   addInputDefault,
-  getProductionDeps,
-  getProductionModules,
   awsPromise,
   stripLambdaVersion,
   makeLambdaPolicyArn,
   parseCommandArgs,
   functionExists,
   copyPackageJson,
-  hashPackageDependencies
+  hashPackageDependencies,
+  logger
 } = require('./util');
 
 describe('util', () => {
@@ -228,6 +227,22 @@ lambdasync
 
     it('creates different hashes given different dependencies', () => {
       expect(hashPackageDependencies(packageJson1)).not.toEqual(hashPackageDependencies(packageJson3));
+    });
+  });
+
+  describe('logger', () => {
+    beforeEach(() => {
+      global.console.log = jest.fn();
+    });
+    it('should return a function',() => {
+      expect(typeof logger('w00t!')).toBe('function');
+    });
+    it('returned function should return it\'s input',() => {
+      expect(logger('w00t!')(1)).toBe(1);
+    });
+    it('should call console.log',() => {
+      logger('herro')('there');
+      expect(global.console.log).toHaveBeenCalled();
     });
   });
 });

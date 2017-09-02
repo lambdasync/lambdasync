@@ -210,7 +210,6 @@ exports.markdown = markdown;
 exports.markdownProperty = markdownProperty;
 exports.mustacheLite = mustacheLite;
 exports.addInputDefault = addInputDefault;
-exports.getProductionModules = getProductionModules;
 exports.awsPromise = awsPromise;
 exports.stripLambdaVersion = stripLambdaVersion;
 exports.chainData = chainData;
@@ -226,7 +225,3 @@ exports.functionExists = functionExists;
 exports.copyPackageJson = copyPackageJson;
 exports.npmInstall = npmInstall;
 exports.hashPackageDependencies = hashPackageDependencies;
-
-if (process.env.NODE_ENV === 'test') {
-  exports.getProductionDeps = getProductionDeps;
-}

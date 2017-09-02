@@ -35,10 +35,6 @@ exports[`util markdownProperty should produce markdown properties based on the i
 "
 `;
 
-exports[`util mustacheLite should not replace unmatched params 1`] = `"Hello, {{you}}! My name is Bar!"`;
-
-exports[`util mustacheLite should replace matching params 1`] = `"Hello, Foo! My name is Bar!"`;
-
 exports[`util parseCommandArgs should create an object with the arg array from CLI 1`] = `
 Object {
   "memory": "128",
