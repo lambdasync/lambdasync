@@ -16,7 +16,8 @@ const {
   copyPackageJson,
   hashPackageDependencies,
   logger,
-  handleGenericFailure
+  handleGenericFailure,
+  logMessage
 } = require('./util');
 
 describe('util', () => {
@@ -260,5 +261,22 @@ lambdasync
       expect(global.console.log).toHaveBeenCalled();
       expect(global.console.log.mock.calls[0][0]).toContain(mockedMessage);
     })
+  });
+
+  describe('logMessage', () => {
+    beforeEach(() => {
+      global.console.log = jest.fn();
+    });
+    it('should return a function',() => {
+      expect(typeof logMessage('w00t!')).toBe('function');
+    });
+    it('returned function should return it\'s input',() => {
+      expect(logMessage('w00t!')(1)).toBe(1);
+    });
+    it('should call console.log',() => {
+      const hello = 'hello';
+      logMessage(hello)('there');
+      expect(global.console.log).toHaveBeenLastCalledWith(hello);
+    });
   });
 });
