@@ -18,7 +18,8 @@ const {
   logger,
   handleGenericFailure,
   logMessage,
-  formatTimestamp
+  formatTimestamp,
+  delay
 } = require('./util');
 
 describe('util', () => {
@@ -285,5 +286,25 @@ lambdasync
     it('Should format a timestamp to ISO date time format', () => {
       expect(formatTimestamp(new Date())).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/);
     })
-  })
+  });
+
+  describe('delay', () => {
+    const delayTime = 10;
+    const delayFunc = delay(delayTime);
+    it('should return a function',() => {
+      expect(typeof delayFunc).toBe('function');
+    });
+    it('returned function should return a Promise',() => {
+      expect(delayFunc('w00t')).toBeInstanceOf(Promise);
+    });
+    it('promise should resolve with input value after the specified time', () => {
+      const start = new Date().getTime();
+      delayFunc('💩')
+        .then(val => {
+          const end = new Date().getTime();
+          expect(val).toBe('💩');
+          expect(end - start).toBeGreaterThanOrEqual(delayTime);
+        });
+    });
+  });
 });
