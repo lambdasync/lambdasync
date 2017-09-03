@@ -196,7 +196,8 @@ function npmInstall(flags = '') {
 }
 
 function isDate(date) {
-  return Object.prototype.toString.call(date) === '[object Date]';
+  return Object.prototype.toString.call(date) === '[object Date]' && 
+    (date.toString() && date.toString() !== 'Invalid Date');
 }
 
 exports = module.exports = {};

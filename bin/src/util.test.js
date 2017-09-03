@@ -20,7 +20,8 @@ const {
   logMessage,
   formatTimestamp,
   delay,
-  startWith
+  startWith,
+  isDate
 } = require('./util');
 
 describe('util', () => {
@@ -315,5 +316,20 @@ lambdasync
       startWith(val)
         .then(res => expect(res).toBe(val));
     });
-  })
+  });
+
+  describe('isDate', () => {
+    it('Should return true for valid dates', () => {
+      expect(isDate(new Date())).toBe(true);
+    });
+    it('Should return false for invalid dates', () => {
+      expect(isDate(new Date('w00t'))).toBe(false);
+    });
+    it('should return false for non Date types', () => {
+      expect(isDate('test')).toBe(false);
+      expect(isDate(42)).toBe(false);
+      expect(isDate([])).toBe(false);
+      expect(isDate({})).toBe(false);
+    });
+  });
 });
