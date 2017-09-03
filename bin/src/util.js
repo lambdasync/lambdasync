@@ -181,10 +181,6 @@ const delay = time => input => new Promise(resolve => {
   }, time);
 });
 
-const chainData = fn =>
-  (res = {}) => Promise.resolve(fn(res))
-    .then(out => Object.assign(res, out));
-
 const startWith = data => Promise.resolve(data);
 
 function npmInstall(flags = '') {

@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const ncp = require('copy-paste');
+const chainData = require('chain-promise-data');
 
 const aws = require('../aws.js');
 const {
@@ -13,7 +14,6 @@ const {updateSettings, getSettings} = require('../settings.js');
 const {
   awsPromise,
   markdown,
-  chainData,
   startWith
 } = require('../util.js');
 
