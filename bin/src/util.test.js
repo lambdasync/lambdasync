@@ -17,7 +17,8 @@ const {
   hashPackageDependencies,
   logger,
   handleGenericFailure,
-  logMessage
+  logMessage,
+  formatTimestamp
 } = require('./util');
 
 describe('util', () => {
@@ -279,4 +280,10 @@ lambdasync
       expect(global.console.log).toHaveBeenLastCalledWith(hello);
     });
   });
+
+  describe('formatTimestamp', () => {
+    it('Should format a timestamp to ISO date time format', () => {
+      expect(formatTimestamp(new Date())).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/);
+    })
+  })
 });

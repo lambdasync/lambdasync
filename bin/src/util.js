@@ -163,15 +163,11 @@ const logMessage = message => input => {
   return input;
 };
 
-function isDate(date) {
-  return Object.prototype.toString.call(date) === '[object Date]';
-}
-
 function formatTimestamp(timestamp) {
   // Timestamp is in UTC, but user wants to see local time so add the offset
   // Inverse the offset since we have a UTC time to convert to local
   const offset = new Date().getTimezoneOffset() * -1;
-  const localTime = new Date(timestamp + (offset * 60 * 1000));
+  const localTime = new Date(timestamp.getTime() + (offset * 60 * 1000));
   if (isDate(localTime)) {
     const dateStr = localTime.toISOString();
     return dateStr.replace('T', ' ').substring(0, dateStr.indexOf('.'));
@@ -203,6 +199,10 @@ function npmInstall(flags = '') {
   });
 }
 
+function isDate(date) {
+  return Object.prototype.toString.call(date) === '[object Date]';
+}
+
 exports = module.exports = {};
 exports.promisedExec = promisedExec;
 exports.handleGenericFailure = handleGenericFailure;
@@ -225,3 +225,7 @@ exports.functionExists = functionExists;
 exports.copyPackageJson = copyPackageJson;
 exports.npmInstall = npmInstall;
 exports.hashPackageDependencies = hashPackageDependencies;
+
+if (process.env.NODE_ENV === 'test') {
+  exports.isDate = isDate;
+}
