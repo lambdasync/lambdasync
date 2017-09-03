@@ -19,7 +19,8 @@ const {
   handleGenericFailure,
   logMessage,
   formatTimestamp,
-  delay
+  delay,
+  startWith
 } = require('./util');
 
 describe('util', () => {
@@ -307,4 +308,12 @@ lambdasync
         });
     });
   });
+
+  describe('startWith', () => {
+    it('should resolve a promise with the input value', () => {
+      const val = 'arbitrary value';
+      startWith(val)
+        .then(res => expect(res).toBe(val));
+    });
+  })
 });

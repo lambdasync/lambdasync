@@ -208,7 +208,6 @@ exports.mustacheLite = mustacheLite;
 exports.addInputDefault = addInputDefault;
 exports.awsPromise = awsPromise;
 exports.stripLambdaVersion = stripLambdaVersion;
-exports.chainData = chainData;
 exports.startWith = startWith;
 exports.delay = delay;
 exports.makeLambdaPolicyArn = makeLambdaPolicyArn;
