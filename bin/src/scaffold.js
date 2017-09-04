@@ -1,10 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const validate = require('validate-npm-package-name');
-const ncp = require('ncp').ncp;
+const copy = require('recursive-copy');
 
 const maybeInit = require('./init');
-const {mustacheLite, markdown, copyPackageJson} = require('./util');
+const {mustacheLite, markdown, copyPackageJson, npmInstall} = require('./util');
 const {LAMBDASYNC_ROOT} = require('./constants');
 
 const validTemplatenames = ['vanilla', 'express'];
@@ -38,7 +38,7 @@ module.exports = function (name = '', templateName) {
     .then(() => copyPackageJson(TEMPLATE_PATH, process.cwd(), {name}))
     // Run the project init flow
     .then(() => maybeInit({}))
-    .then(install)
+    .then(npmInstall)
     .then(() => {
       console.log(markdown({
         templatePath: 'markdown/scaffold-success.md',
@@ -53,13 +53,8 @@ module.exports = function (name = '', templateName) {
 };
 
 function copyTemplateDir(templateDir, targetDir) {
-  const packageJsonFilter = {filter: filename => !filename.includes('package.json')};
-  return new Promise((resolve, reject) => {
-    ncp(templateDir, targetDir, packageJsonFilter, err => {
-      if (err) {
-        return reject(err);
-      }
-      return resolve();
-    });
-  });
+  const packageJsonFilter = {
+    filter: path => path && !path.includes('package.json')
+  };
+  return copy(templateDir, targetDir, packageJsonFilter);
 }

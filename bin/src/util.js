@@ -195,6 +195,10 @@ function npmInstall(flags = '') {
   });
 }
 
+function ignoreData() {
+  return {};
+}
+
 function isDate(date) {
   return Object.prototype.toString.call(date) === '[object Date]' && 
     (date.toString() && date.toString() !== 'Invalid Date');
@@ -221,6 +225,7 @@ exports.functionExists = functionExists;
 exports.copyPackageJson = copyPackageJson;
 exports.npmInstall = npmInstall;
 exports.hashPackageDependencies = hashPackageDependencies;
+exports.ignoreData = ignoreData;
 
 if (process.env.NODE_ENV === 'test') {
   exports.isDate = isDate;
