@@ -38,7 +38,7 @@ module.exports = function (name = '', templateName) {
     .then(() => copyPackageJson(TEMPLATE_PATH, process.cwd(), {name}))
     // Run the project init flow
     .then(() => maybeInit({}))
-    .then(npmInstall)
+    .then(() => npmInstall())
     .then(() => {
       console.log(markdown({
         templatePath: 'markdown/scaffold-success.md',
