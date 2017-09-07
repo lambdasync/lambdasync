@@ -190,6 +190,7 @@ function deployApi(settings) {
   if (settings.apiGatewayUrl) {
     return settings;
   }
+  apigateway = getGateway(settings);
   const {apiGatewayRestApiId, region} = settings;
   const stageName = API_STAGE_NAME;
   const apiGatewayUrl = `https://${apiGatewayRestApiId}.execute-api.${region}.amazonaws.com/${stageName}`;
