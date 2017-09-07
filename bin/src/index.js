@@ -2,12 +2,12 @@
 'use strict';
 const path = require('path');
 const minimist = require('minimist');
+const chainData = require('chain-promise-data');
 
 const {version} = require('../../package.json');
 const {getSettings} = require('./settings');
 const maybeInit = require('./init');
 const deploy = require('./deploy');
-const {chainData} = require('./util');
 const {setupApiGateway, deployApi} = require('./gateway');
 const {setLambdaPermission} = require('./permission');
 const {callApi} = require('./call-api');

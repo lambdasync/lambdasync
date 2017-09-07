@@ -1,11 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const validate = require('validate-npm-package-name');
-const ncp = require('ncp').ncp;
-const spawn = require('cross-spawn');
+const copy = require('recursive-copy');
 
 const maybeInit = require('./init');
-const {mustacheLite, markdown} = require('./util');
+const {mustacheLite, markdown, copyPackageJson, npmInstall} = require('./util');
 const {LAMBDASYNC_ROOT} = require('./constants');
 
 const validTemplatenames = ['vanilla', 'express'];
@@ -39,7 +38,7 @@ module.exports = function (name = '', templateName) {
     .then(() => copyPackageJson(TEMPLATE_PATH, process.cwd(), {name}))
     // Run the project init flow
     .then(() => maybeInit({}))
-    .then(install)
+    .then(() => npmInstall())
     .then(() => {
       console.log(markdown({
         templatePath: 'markdown/scaffold-success.md',
@@ -54,34 +53,8 @@ module.exports = function (name = '', templateName) {
 };
 
 function copyTemplateDir(templateDir, targetDir) {
-  const packageJsonFilter = {filter: filename => !filename.includes('package.json')};
-  return new Promise((resolve, reject) => {
-    ncp(templateDir, targetDir, packageJsonFilter, err => {
-      if (err) {
-        return reject(err);
-      }
-      return resolve();
-    });
-  });
-}
-
-function copyPackageJson(templateDir, targetDir, data) {
-  // Copy over package.json with name replaced
-  const jsonTemplate = fs.readFileSync(path.join(templateDir, 'package.json'), 'utf8');
-  return fs.writeFileSync(
-    path.join(targetDir, 'package.json'),
-    mustacheLite(jsonTemplate, data)
-  );
-}
-
-function install() {
-  return new Promise((resolve, reject) => {
-    var child = spawn('npm', ['install'], {stdio: 'inherit'});
-    child.on('close', code => {
-      if (code !== 0) {
-        return reject('npm install failed');
-      }
-      return resolve();
-    });
-  });
+  const packageJsonFilter = {
+    filter: path => path && !path.includes('package.json')
+  };
+  return copy(templateDir, targetDir, packageJsonFilter);
 }

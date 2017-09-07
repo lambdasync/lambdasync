@@ -1,10 +1,13 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const cp = require('child_process');
 const marked = require('marked');
 const TerminalRenderer = require('marked-terminal');
+const spawn = require('cross-spawn');
 
 const {LAMBDASYNC_SRC} = require('./constants');
+const {readFile} = require('./file');
 
 marked.setOptions({
   // Define custom renderer
@@ -61,44 +64,6 @@ function addInputDefault(defaults, inputConfig) {
   return inputConfig;
 }
 
-// Gets object of production dependencies using `npm ls`
-function getProductionDeps() {
-  return new Promise((resolve, reject) => {
-    cp.exec('npm ls --json --production', (err, stdout) => { // eslint-disable-line handle-callback-err
-      try {
-        resolve(JSON.parse(stdout).dependencies);
-      } catch (err) {
-        reject(err);
-      }
-    });
-  });
-}
-
-
-function flattenDeps(deps = {}) {
-  return Object.keys(deps).reduce((acc, moduleName) => {
-    return [
-      ...acc,
-      moduleName,
-      ...flattenDeps(deps[moduleName].dependencies)
-    ];
-  }, []);
-}
-
-function removeDuplicates(flatDeps) {
-  return flatDeps.reduce((acc, moduleName) => {
-    return acc.includes(moduleName) ?
-      acc : [...acc, moduleName];
-  }, []);
-}
-
-// Gets a flat array of all production dependencies
-function getProductionModules() {
-  return getProductionDeps()
-    .then(flattenDeps)
-    .then(removeDuplicates);
-}
-
 // Calls an aws sdk class and method and returns a promise
 function awsPromise(api, method, params) {
   return new Promise((resolve, reject) => {
@@ -127,13 +92,6 @@ function makeLambdaPolicyArn({lambdaArn, apiGatewayId}) {
     .concat(`/*/*/*`);
 }
 
-function handleGenericFailure() {
-  // TODO: Log errors here, possibly to a Lambda instance? :)
-  console.log(markdown({
-    templatePath: 'markdown/generic-fail.md'
-  }));
-}
-
 // takes an array of CLI args [ 'timeout=10' ] and returns a key value object
 // {timeout: 10}, it will also try to JSON parse args
 function parseCommandArgs(args = [], settings = {}) {
@@ -154,46 +112,6 @@ function parseCommandArgs(args = [], settings = {}) {
   }, {});
 }
 
-const logger = label => input => {
-  console.log('\n\n' + label + '\n');
-  console.log(input);
-  console.log('\n\n');
-  return input;
-};
-
-const logMessage = message => input => {
-  console.log(message);
-  return input;
-};
-
-function isDate(date) {
-  return Object.prototype.toString.call(date) === '[object Date]';
-}
-
-function formatTimestamp(timestamp) {
-  // Timestamp is in UTC, but user wants to see local time so add the offset
-  // Inverse the offset since we have a UTC time to convert to local
-  const offset = new Date().getTimezoneOffset() * -1;
-  const localTime = new Date(timestamp + (offset * 60 * 1000));
-  if (isDate(localTime)) {
-    const dateStr = localTime.toISOString();
-    return dateStr.replace('T', ' ').substring(0, dateStr.indexOf('.'));
-  }
-  return null;
-}
-
-const delay = time => input => new Promise(resolve => {
-  setTimeout(() => {
-    resolve(input);
-  }, time);
-});
-
-const chainData = fn =>
-  (res = {}) => Promise.resolve(fn(res))
-    .then(out => Object.assign(res, out));
-
-const startWith = data => Promise.resolve(data);
-
 function functionExists(api, functionName) {
   return new Promise((resolve, reject) => {
     const params = {
@@ -211,6 +129,81 @@ function functionExists(api, functionName) {
   });
 }
 
+function copyPackageJson(templateDir, targetDir, data) {
+  const jsonTemplate = fs.readFileSync(path.join(templateDir, 'package.json'), 'utf8');
+  return fs.writeFileSync(
+    path.join(targetDir, 'package.json'),
+    mustacheLite(jsonTemplate, data)
+  );
+}
+
+function hashPackageDependencies({dependencies = {}}) {
+  if (!dependencies) {
+    return null;
+  }
+  return crypto.createHash('md5').update(JSON.stringify(dependencies)).digest('hex');
+}
+
+const logger = label => input => {
+  console.log('\n\n' + label + '\n');
+  console.log(input);
+  console.log('\n\n');
+  return input;
+};
+
+function handleGenericFailure() {
+  // TODO: Log errors here, possibly to a Lambda instance? :)
+  console.log(markdown({
+    templatePath: 'markdown/generic-fail.md'
+  }));
+}
+
+const logMessage = message => input => {
+  console.log(message);
+  return input;
+};
+
+function formatTimestamp(timestamp) {
+  // Timestamp is in UTC, but user wants to see local time so add the offset
+  // Inverse the offset since we have a UTC time to convert to local
+  const offset = new Date().getTimezoneOffset() * -1;
+  const localTime = new Date(timestamp.getTime() + (offset * 60 * 1000));
+  if (isDate(localTime)) {
+    const dateStr = localTime.toISOString();
+    return dateStr.replace('T', ' ').substring(0, dateStr.indexOf('.'));
+  }
+  return null;
+}
+
+const delay = time => input => new Promise(resolve => {
+  setTimeout(() => {
+    resolve(input);
+  }, time);
+});
+
+const startWith = data => Promise.resolve(data);
+
+function npmInstall(flags = '') {
+  return new Promise((resolve, reject) => {
+    var child = spawn('npm', ['install', flags], {stdio: 'inherit'});
+    child.on('close', code => {
+      if (code !== 0) {
+        return reject('npm install failed');
+      }
+      return resolve();
+    });
+  });
+}
+
+function ignoreData() {
+  return {};
+}
+
+function isDate(date) {
+  return Object.prototype.toString.call(date) === '[object Date]' && 
+    (date.toString() && date.toString() !== 'Invalid Date');
+}
+
 exports = module.exports = {};
 exports.promisedExec = promisedExec;
 exports.handleGenericFailure = handleGenericFailure;
@@ -218,10 +211,8 @@ exports.markdown = markdown;
 exports.markdownProperty = markdownProperty;
 exports.mustacheLite = mustacheLite;
 exports.addInputDefault = addInputDefault;
-exports.getProductionModules = getProductionModules;
 exports.awsPromise = awsPromise;
 exports.stripLambdaVersion = stripLambdaVersion;
-exports.chainData = chainData;
 exports.startWith = startWith;
 exports.delay = delay;
 exports.makeLambdaPolicyArn = makeLambdaPolicyArn;
@@ -231,7 +222,11 @@ exports.logMessage = logMessage;
 exports.formatTimestamp = formatTimestamp;
 exports.isDate = isDate;
 exports.functionExists = functionExists;
+exports.copyPackageJson = copyPackageJson;
+exports.npmInstall = npmInstall;
+exports.hashPackageDependencies = hashPackageDependencies;
+exports.ignoreData = ignoreData;
 
 if (process.env.NODE_ENV === 'test') {
-  exports.getProductionDeps = getProductionDeps;
+  exports.isDate = isDate;
 }
