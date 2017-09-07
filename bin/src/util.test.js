@@ -21,7 +21,8 @@ const {
   formatTimestamp,
   delay,
   startWith,
-  isDate
+  isDate,
+  removeFileExtension
 } = require('./util');
 
 describe('util', () => {
@@ -330,6 +331,14 @@ lambdasync
       expect(isDate(42)).toBe(false);
       expect(isDate([])).toBe(false);
       expect(isDate({})).toBe(false);
+    });
+  });
+
+  describe('removeFileExtension', () => {
+    it('should remove known file extensions', () => {
+      expect(removeFileExtension('./hej/kom/och/hjalp/mig.js')).toBe('./hej/kom/och/hjalp/mig');
+      expect(removeFileExtension('lambdasync.com')).toBe('lambdasync.com');
+      expect(removeFileExtension('lambdasync')).toBe('lambdasync');
     });
   });
 });
