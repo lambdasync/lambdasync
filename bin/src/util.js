@@ -204,6 +204,25 @@ function isDate(date) {
     (date.toString() && date.toString() !== 'Invalid Date');
 }
 
+function removeFileExtension(path = '') {
+  // Instead of setting rules for what a file extension is based on length and allowed chars
+  // Let's just specify which file endings we want to be able to remove
+  const extensionsToRemove = ['js'];
+  // Get position of last dot
+  const lastDotPosition = path.lastIndexOf('.');
+  // If none are found we can safely just return the original string
+  if (lastDotPosition === -1) {
+    return path;
+  }
+
+  // Get the file extension (right of the last dot)
+  const maybeExtension = path.substr(lastDotPosition + 1);
+  if (extensionsToRemove.indexOf(maybeExtension) !== -1) {
+    return path.substr(0, lastDotPosition);
+  }
+  return path;
+}
+
 exports = module.exports = {};
 exports.promisedExec = promisedExec;
 exports.handleGenericFailure = handleGenericFailure;
@@ -226,6 +245,7 @@ exports.copyPackageJson = copyPackageJson;
 exports.npmInstall = npmInstall;
 exports.hashPackageDependencies = hashPackageDependencies;
 exports.ignoreData = ignoreData;
+exports.removeFileExtension = removeFileExtension;
 
 if (process.env.NODE_ENV === 'test') {
   exports.isDate = isDate;
