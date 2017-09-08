@@ -17,7 +17,9 @@ const {
   ignoreData,
   startWith,
   npmInstall,
-  hashPackageDependencies
+  hashPackageDependencies,
+  awsPromise,
+  removeFileExtension
 } = require('./util');
 const {updateSettings} = require('./settings');
 const {
@@ -63,9 +65,13 @@ function deploy(deploySettings) {
 }
 
 function doDeploy(type) {
-  const deployFunc = type === 'new' ? createFunction : updateFunctionCode;
-  return createBundle()
-    .then(() => process.chdir(TARGET_ROOT))
+  const deployFunc = type === 'new' ? createFunction : updateFunction;
+  return startWith({})
+    .then(chainData(
+      () => readFile(path.join(TARGET_ROOT, 'package.json'), JSON.parse),
+      packageJson => ({ packageJson })
+    ))
+    .then(chainData(createBundle, ignoreData))
     .then(deployFunc)
     .then(handleSuccess)
     .catch(err => {
@@ -103,43 +109,75 @@ function ensureDir(dir) {
   });
 }
 
-function createBundle() {
+function createBundle({packageJson = {}}) {
   return ensureDir(TARGET_DEPLOY_DIR)
-    .then(clearDeployDir)
+    .then(() => clearDeployDir(packageJson))
     .then(() => {
       copyPackageJson(TARGET_ROOT, TARGET_DEPLOY_DIR);
-      return {};
+      return {packageJson};
     })
-    .then(chainData(
-      () => readFile(path.join(TARGET_DEPLOY_DIR, 'package.json'), JSON.parse),
-      packageJson => ({ packageJson })
-    ))
     .then(chainData(ensureDependencies, ignoreData))
     .then(chainData(
       ({ packageJson }) => {
-        const { ignore, include } = packageJson || {};
+        const { ignore, include } = packageJson.lambdasync || {};
         return copyFiles(ignore, include);
       },
       ignoreData
     ))
     .then(zip)
-    .then(() => process)
+    .then(() => process.chdir(TARGET_ROOT));
+}
+
+function shouldIncludeNodeModules(packageJson) {
+  const { ignore, include } = packageJson.lambdasync || {};
+  const nodeModulesPath = 'node_modules/module';
+  const ignoreMatch = ignore ? matchesPatterns(nodeModulesPath, ignore) : false;
+  const includeMatch = include ? matchesPatterns(nodeModulesPath, include) : true;
+  return (!ignoreMatch && includeMatch);
 }
 
 function ensureDependencies({ packageJson }) {
-  mkdirp(TARGET_HIDDEN_DIR, () => {
-    const dependencyHashPath = path.join(TARGET_HIDDEN_DIR, DEPENDENCY_HASH_FILE);
-    const currentDependencyHash = hashPackageDependencies(packageJson);
-    return readFile(dependencyHashPath)
-      .catch(err => '')
-      .then(oldHash => {
-        if (oldHash === currentDependencyHash) {
-          return;
-        }
-        return updateDependencies();
-      })
-      .then(() => writeFile(dependencyHashPath, currentDependencyHash));
-  });
+  return ensureDir(TARGET_HIDDEN_DIR)
+    .then(() => {
+      return new Promise((resolve, reject) => {
+        fs.stat(path.join(TARGET_DEPLOY_DIR, 'node_modules'), (err, res) => {
+          if (err) {
+            return resolve(false);
+          }
+          return resolve(res.isDirectory())
+        })
+      });
+    })
+    .then(chainData(nodeModulesExists => {
+      const currentDependencyHash = hashPackageDependencies(packageJson);
+      if (!shouldIncludeNodeModules(packageJson)) {
+        return {
+          shouldUpdateNodeModules: false,
+          currentDependencyHash,
+        };
+      }
+
+      
+      return readFile(path.join(TARGET_HIDDEN_DIR, DEPENDENCY_HASH_FILE))
+        .catch(err => '')
+        .then(oldHash => {
+          if (oldHash === currentDependencyHash && nodeModulesExists) {
+            return false;
+          }
+          return true;
+        })
+        .then(shouldUpdateNodeModules => ({
+          shouldUpdateNodeModules,
+          currentDependencyHash,
+        }));
+    }))
+    .then(chainData(({shouldUpdateNodeModules}) => {
+      if (!shouldUpdateNodeModules) {
+        return;
+      }
+      return updateDependencies();
+    }, ignoreData))
+    .then(({ currentDependencyHash }) => writeFile(path.join(TARGET_HIDDEN_DIR, DEPENDENCY_HASH_FILE), currentDependencyHash));
 }
 
 function updateDependencies() {
@@ -175,9 +213,14 @@ function matchesPatterns(path, patterns = []) {
   }, false);
 }
 
-function clearDeployDir() {
+function clearDeployDir(packageJson) {
+  let dirContentPattern = '*';
+  if (shouldIncludeNodeModules(packageJson)) {
+    dirContentPattern = '!(node_modules)';
+  }
+
   return new Promise((resolve, reject) => {
-    rimraf(`${TARGET_DEPLOY_DIR}/!(node_modules)`, (err) => {
+    rimraf(`${TARGET_DEPLOY_DIR}/${dirContentPattern}`, (err) => {
       if (err) {
         return reject(err);
       }
@@ -190,6 +233,17 @@ function zip() {
   return promisedExec(`${LAMBDASYNC_BIN}/bestzip ${TARGET_ROOT}/deploy.zip ./*`, {
     cwd: TARGET_DEPLOY_DIR
   });
+}
+
+function updateFunction({packageJson = {}}) {
+  // If there is a custom entry point set incorporate it into the Handler
+  const { entry } = packageJson.lambdasync || {};
+  const Handler = `${entry ? removeFileExtension(entry) : 'index'}.handler`;
+  return awsPromise(lambda, 'updateFunctionConfiguration', {
+    FunctionName: settings.lambdaName,
+    Handler,
+  })
+    .then(updateFunctionCode);
 }
 
 function updateFunctionCode() {
@@ -207,14 +261,14 @@ function updateFunctionCode() {
   });
 }
 
-function createFunction() {
+function createFunction({ packageJson }) {
   return new Promise((resolve, reject) => {
     lambda.createFunction({
       Code: {
         ZipFile: fs.readFileSync('./deploy.zip')
       },
       FunctionName: settings.lambdaName,
-      Handler: 'index.handler',
+      Handler: 'new/index.handler',
       Role: settings.lambdaRole,
       Runtime: 'nodejs6.10', /* required */
       Description: description, // package.json description
