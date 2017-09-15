@@ -200,7 +200,7 @@ function ignoreData() {
 }
 
 function isDate(date) {
-  return Object.prototype.toString.call(date) === '[object Date]' && 
+  return Object.prototype.toString.call(date) === '[object Date]' &&
     (date.toString() && date.toString() !== 'Invalid Date');
 }
 
@@ -221,6 +221,16 @@ function removeFileExtension(path = '') {
     return path.substr(0, lastDotPosition);
   }
   return path;
+}
+
+function makeAbsolutePath(inPath) {
+  // First find out if the path is absolute
+  if (path.isAbsolute(inPath)) {
+    return inPath;
+  }
+
+  // Otherwise build an absolute path from process.cwd()
+  return path.join(process.cwd(), inPath);
 }
 
 exports = module.exports = {};
@@ -246,6 +256,7 @@ exports.npmInstall = npmInstall;
 exports.hashPackageDependencies = hashPackageDependencies;
 exports.ignoreData = ignoreData;
 exports.removeFileExtension = removeFileExtension;
+exports.makeAbsolutePath = makeAbsolutePath;
 
 if (process.env.NODE_ENV === 'test') {
   exports.isDate = isDate;

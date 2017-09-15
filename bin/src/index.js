@@ -5,7 +5,7 @@ const minimist = require('minimist');
 const chainData = require('chain-promise-data');
 
 const {version} = require('../../package.json');
-const {getSettings} = require('./settings');
+const {getSettings,setSettingsFile} = require('./settings');
 const maybeInit = require('./init');
 const deploy = require('./deploy');
 const {setupApiGateway, deployApi} = require('./gateway');
@@ -20,11 +20,17 @@ const {logs} = require('./logs');
 const command = minimist(process.argv.slice(2), {
   alias: {
     v: 'version',
-    c: 'call'
+    c: 'call',
+    sf: 'settings-file',
   }
 });
 
 function handleCommand(command) {
+  if (command.sf && typeof command.sf === 'string') {
+    console.log('Changing settingsfile to: ' + command.sf);
+    setSettingsFile(command.sf);
+  }
+
   if (command.call) {
     return callApi(command);
   }
