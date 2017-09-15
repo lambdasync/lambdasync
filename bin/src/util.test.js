@@ -22,7 +22,8 @@ const {
   delay,
   startWith,
   isDate,
-  removeFileExtension
+  removeFileExtension,
+  makeAbsolutePath
 } = require('./util');
 
 describe('util', () => {
@@ -339,6 +340,17 @@ lambdasync
       expect(removeFileExtension('./hej/kom/och/hjalp/mig.js')).toBe('./hej/kom/och/hjalp/mig');
       expect(removeFileExtension('lambdasync.com')).toBe('lambdasync.com');
       expect(removeFileExtension('lambdasync')).toBe('lambdasync');
+    });
+  });
+
+  describe('makeAbsolutePath', () => {
+    const ABS_PATH = '/Users/lambdasync';
+    const REL_PATH = './bin/src/file.js';
+    it('should return absolute paths unchanged', () => {
+      expect(makeAbsolutePath(ABS_PATH)).toBe(ABS_PATH);
+    });
+    it('should add process.cwd() to relative paths', () => {
+      expect(makeAbsolutePath(REL_PATH)).toBe(path.join(process.cwd(), REL_PATH));
     });
   });
 });
