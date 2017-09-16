@@ -67,7 +67,7 @@ function fetchLogs({api, logGroupName, startTime}) {
 }
 
 function logEvent({timestamp, message}) {
-  const time = formatTimestamp(timestamp);
+  const time = formatTimestamp(new Date(timestamp));
   const requestId = chalk.yellow(getRequestIdFromMessage(message) || 'NO REQUESTID');
   let msg = `${time} ${requestId} - ${message}`;
 
