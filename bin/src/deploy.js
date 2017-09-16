@@ -19,7 +19,8 @@ const {
   npmInstall,
   hashPackageDependencies,
   awsPromise,
-  removeFileExtension
+  removeFileExtension,
+  makeAbsolutePath
 } = require('./util');
 const {updateSettings} = require('./settings');
 const {
@@ -157,7 +158,7 @@ function ensureDependencies({ packageJson }) {
         };
       }
 
-      
+
       return readFile(path.join(TARGET_HIDDEN_DIR, DEPENDENCY_HASH_FILE))
         .catch(err => '')
         .then(oldHash => {
@@ -235,10 +236,17 @@ function zip() {
   });
 }
 
+function getHandlerPath(entryConfig) {
+  return `${entryConfig ?
+    removeFileExtension(makeAbsolutePath(entryConfig)) :
+    'index'
+  }.handler`;
+}
+
 function updateFunction({packageJson = {}}) {
   // If there is a custom entry point set incorporate it into the Handler
   const { entry } = packageJson.lambdasync || {};
-  const Handler = `${entry ? removeFileExtension(entry) : 'index'}.handler`;
+  const Handler = getHandlerPath(entry);
   return awsPromise(lambda, 'updateFunctionConfiguration', {
     FunctionName: settings.lambdaName,
     Handler,
@@ -262,13 +270,15 @@ function updateFunctionCode() {
 }
 
 function createFunction({ packageJson }) {
+  const { entry } = packageJson.lambdasync || {};
+  const Handler = getHandlerPath(entry);
   return new Promise((resolve, reject) => {
     lambda.createFunction({
       Code: {
         ZipFile: fs.readFileSync('./deploy.zip')
       },
       FunctionName: settings.lambdaName,
-      Handler: 'new/index.handler',
+      Handler,
       Role: settings.lambdaRole,
       Runtime: 'nodejs6.10', /* required */
       Description: description, // package.json description

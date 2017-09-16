@@ -4,8 +4,9 @@ const validate = require('validate-npm-package-name');
 const copy = require('recursive-copy');
 
 const maybeInit = require('./init');
-const {mustacheLite, markdown, copyPackageJson, npmInstall} = require('./util');
-const {LAMBDASYNC_ROOT} = require('./constants');
+const {mustacheLite, markdown, copyPackageJson, npmInstall, logger} = require('./util');
+const {LAMBDASYNC_ROOT, SETTINGS_FILE} = require('./constants');
+const {setSettingsFile} = require('./settings');
 
 const validTemplatenames = ['vanilla', 'express'];
 
@@ -29,6 +30,7 @@ module.exports = function (name = '', templateName) {
   // Create the new project folder
   fs.mkdirSync(name);
   process.chdir(name);
+  setSettingsFile(path.join(process.cwd(), SETTINGS_FILE));
 
   const TEMPLATE_PATH = path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'new', template);
 
