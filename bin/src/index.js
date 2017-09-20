@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 const path = require('path');
+const {execSync} = require('child_process');
 const minimist = require('minimist');
 const chainData = require('chain-promise-data');
 
@@ -14,8 +15,8 @@ const {callApi} = require('./call-api');
 const {makeLambdaRole} = require('./iam');
 const scaffold = require('./scaffold');
 const {config, variable} = require('./config');
-const devServer = require('./devserver');
 const {logs} = require('./logs');
+const {LAMBDASYNC_SRC} = require('./constants');
 
 const command = minimist(process.argv.slice(2), {
   alias: {
@@ -27,7 +28,6 @@ const command = minimist(process.argv.slice(2), {
 
 function handleCommand(command) {
   if (command.sf && typeof command.sf === 'string') {
-    console.log('Changing settingsfile to: ' + command.sf);
     setSettingsFile(command.sf);
   }
 
@@ -36,9 +36,7 @@ function handleCommand(command) {
   }
 
   if (command._[0] === 'devserver') {
-    const lambdaHandler = require(path.join(process.cwd(), 'index.js')).handler; // eslint-disable-line import/no-dynamic-require
-    return getSettings()
-      .then(settings => devServer(settings, lambdaHandler, command._.slice(1)));
+    return execSync(`node ${process.argv.slice(3).join(' ')} ${path.join(LAMBDASYNC_SRC, 'devserver', 'index.js')}`, {stdio:[0,1,2]});
   }
 
   if (command._[0] === 'logs') {
