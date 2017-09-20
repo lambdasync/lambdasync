@@ -210,7 +210,7 @@ function matchesPatterns(path, patterns = []) {
   }
   return patterns.reduce((res, pattern) => {
     if (res) { return res; }
-    return minimatch(path, pattern);
+    return minimatch(path, pattern, { dot: true });
   }, false);
 }
 
