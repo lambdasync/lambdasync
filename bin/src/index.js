@@ -36,7 +36,14 @@ function handleCommand(command) {
   }
 
   if (command._[0] === 'devserver') {
-    return execSync(`node ${process.argv.slice(3).join(' ')} ${path.join(LAMBDASYNC_SRC, 'devserver', 'index.js')}`, {stdio:[0,1,2]});
+    const nodeCliWhiteList = ['-r', '--inspect', '--inspect-brk', '--inspect-port', '--trace-sync-io', '--preserve-symlinks', '--icu-data-dir'];
+    const whiteListRe = new RegExp(`^(${nodeCliWhiteList.join('|')})(=|$)`);
+    const isWhitelisted = arg => whiteListRe.test(arg);
+    return execSync(`node ${process.argv
+      .slice(3)
+      .filter(isWhitelisted)
+      .join(' ')
+    } ${path.join(LAMBDASYNC_SRC, 'devserver', 'index.js')}`, {stdio:[0,1,2]});
   }
 
   if (command._[0] === 'logs') {
