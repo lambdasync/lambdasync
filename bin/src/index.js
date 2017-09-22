@@ -37,14 +37,8 @@ function handleCommand(command) {
 
   if (command._[0] === 'devserver') {
     const nodeCliWhiteList = ['-r', '--inspect', '--inspect-brk', '--inspect-port', '--trace-sync-io', '--preserve-symlinks', '--icu-data-dir'];
-    function isWhitelisted(arg) {
-      return nodeCliWhiteList.reduce((acc, current) => {
-        if (arg.indexOf(current) === 0) {
-          return true;
-        }
-        return acc;
-      }, false);
-    }
+    const whiteListRe = new RegExp(`^(${nodeCliWhiteList.join('|')})(=|$)`);
+    const isWhitelisted = arg => whiteListRe.test(arg);
     return execSync(`node ${process.argv
       .slice(3)
       .filter(isWhitelisted)
