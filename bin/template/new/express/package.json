@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "aws-serverless-express": "1.1.0",
+    "aws-serverless-express": "3.0.2",
     "body-parser": "1.15.2",
     "cors": "2.8.1",
     "express": "4.14.0"
