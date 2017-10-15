@@ -20,7 +20,8 @@ const {
   hashPackageDependencies,
   awsPromise,
   removeFileExtension,
-  makeAbsolutePath
+  makeAbsolutePath,
+  removeCurrentPath
 } = require('./util');
 const {updateSettings} = require('./settings');
 const {
@@ -133,8 +134,7 @@ function shouldIncludeNodeModules(packageJson) {
   const { ignore, include } = packageJson.lambdasync || {};
   const nodeModulesPath = 'node_modules/module';
   const ignoreMatch = ignore ? matchesPatterns(nodeModulesPath, ignore) : false;
-  const includeMatch = include ? matchesPatterns(nodeModulesPath, include) : true;
-  return (!ignoreMatch && includeMatch);
+  return !ignoreMatch;
 }
 
 function ensureDependencies({ packageJson }) {
@@ -238,7 +238,7 @@ function zip() {
 
 function getHandlerPath(entryConfig) {
   return `${entryConfig ?
-    removeFileExtension(makeAbsolutePath(entryConfig)) :
+    removeFileExtension(removeCurrentPath(makeAbsolutePath(entryConfig))) :
     'index'
   }.handler`;
 }
