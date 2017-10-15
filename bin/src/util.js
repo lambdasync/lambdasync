@@ -15,9 +15,9 @@ marked.setOptions({
 });
 
 // Executes a CLI command and returns a promise
-function promisedExec(command, options) { // eslint-disable-line no-unused-vars
+function promisedExec(command, options = {}) { // eslint-disable-line no-unused-vars
   return new Promise((resolve, reject) => {
-    cp.exec(command, options = {}, (err, stdout) => {
+    cp.exec(command, options, (err, stdout) => {
       if (err) {
         return reject(err);
       }
@@ -204,6 +204,11 @@ function isDate(date) {
     (date.toString() && date.toString() !== 'Invalid Date');
 }
 
+function removeCurrentPath(path = '') {
+  const pathToRemove = `${process.cwd()}/`;
+  return path.replace(pathToRemove, '');
+}
+
 function removeFileExtension(path = '') {
   // Instead of setting rules for what a file extension is based on length and allowed chars
   // Let's just specify which file endings we want to be able to remove
@@ -257,6 +262,7 @@ exports.hashPackageDependencies = hashPackageDependencies;
 exports.ignoreData = ignoreData;
 exports.removeFileExtension = removeFileExtension;
 exports.makeAbsolutePath = makeAbsolutePath;
+exports.removeCurrentPath = removeCurrentPath;
 
 if (process.env.NODE_ENV === 'test') {
   exports.isDate = isDate;
