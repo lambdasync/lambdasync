@@ -33,6 +33,9 @@ function setup(settings, lambdaHandler) {
 			res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 			res.setHeader('Pragma', 'no-cache');
 			res.setHeader('Expires', '0');
+			Object.keys(req.headers).forEach(key => {
+				res.setHeader(key, req.headers[key]);
+			});
 
 			return lambdaHandler(event, context, callback);
 		});
