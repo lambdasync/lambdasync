@@ -16,7 +16,7 @@ const invokePolicyPath = path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'invoke-p
 const trustPolicyPath = path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'trust-policy.json');
 const dynamodbPolicyPath = path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'dynamodb-policy.json');
 
-function createPolicy(settings) {
+function createInvokePolicy(settings) {
   const AWS = aws(settings);
   const api = new AWS.IAM();
 
@@ -148,7 +148,7 @@ function makeLambdaRole(settings) {
         return settings;
       }
       return createRole(settings)
-        .then(createPolicy)
+        .then(createInvokePolicy)
         .then(attachPolicy)
         .then(logMessage('Delaying for 5 seconds so that AWS has time to index the new Role'))
         .then(delay(5000));
