@@ -1,39 +1,51 @@
 #!/usr/bin/env node
 'use strict';
 const path = require('path');
+const {execSync} = require('child_process');
 const minimist = require('minimist');
+const chainData = require('chain-promise-data');
 
 const {version} = require('../../package.json');
-const {getSettings} = require('./settings');
+const {getSettings,setSettingsFile} = require('./settings');
 const maybeInit = require('./init');
 const deploy = require('./deploy');
-const {chainData, parseCommandArgs} = require('./util');
+const {parseCommandArgs} = require('./util');
 const {setupApiGateway, deployApi} = require('./gateway');
 const {setLambdaPermission} = require('./permission');
 const {callApi} = require('./call-api');
 const {makeLambdaRole} = require('./iam');
 const scaffold = require('./scaffold');
 const {config, variable} = require('./config');
-const devServer = require('./devserver');
 const {logs} = require('./logs');
 const {handleTableCommand} = require('./dynamodb');
+const {LAMBDASYNC_SRC} = require('./constants');
 
 const command = minimist(process.argv.slice(2), {
   alias: {
     v: 'version',
-    c: 'call'
+    c: 'call',
+    sf: 'settings-file',
   }
 });
 
 function handleCommand(command) {
+  if (command.sf && typeof command.sf === 'string') {
+    setSettingsFile(command.sf);
+  }
+
   if (command.call) {
     return callApi(command);
   }
 
   if (command._[0] === 'devserver') {
-    const lambdaHandler = require(path.join(process.cwd(), 'index.js')).handler; // eslint-disable-line import/no-dynamic-require
-    return getSettings()
-      .then(settings => devServer(settings, lambdaHandler, command._.slice(1)));
+    const nodeCliWhiteList = ['-r', '--inspect', '--inspect-brk', '--inspect-port', '--trace-sync-io', '--preserve-symlinks', '--icu-data-dir'];
+    const whiteListRe = new RegExp(`^(${nodeCliWhiteList.join('|')})(=|$)`);
+    const isWhitelisted = arg => whiteListRe.test(arg);
+    return execSync(`node ${process.argv
+      .slice(3)
+      .filter(isWhitelisted)
+      .join(' ')
+    } ${path.join(LAMBDASYNC_SRC, 'devserver', 'index.js')}`, {stdio:[0,1,2]});
   }
 
   if (command._[0] === 'logs') {

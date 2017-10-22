@@ -4,6 +4,7 @@ const ini = require('ini');
 const {SETTINGS_FILE, AWS_CREDENTIALS_PATH, AWS_CONFIG_PATH} = require('./constants');
 const {readFile, writeFile} = require('./file');
 const {jsonStringify} = require('./transform');
+const {makeAbsolutePath} = require('./util');
 
 const settingsInput = [
   'profileName', // Name of local aws-cli profile, default lambdasync
@@ -30,14 +31,16 @@ const settingsFields = [
   'dynamoDbTables',
 ];
 
+let settingsFile = path.join(process.cwd(), SETTINGS_FILE);
+
 function getSettings() {
-  return readFile(path.join(process.cwd(), SETTINGS_FILE), JSON.parse)
+  return readFile(settingsFile, JSON.parse)
     .catch(() => ({}));
 }
 
 function putSettings(settings) {
   return writeFile(
-    path.join(process.cwd(), SETTINGS_FILE),
+    settingsFile,
     filterSettings(settings, settingsFields),
     jsonStringify);
 }
@@ -68,6 +71,10 @@ function filterSettings(obj, fields) {
     }, {});
 }
 
+function setSettingsFile(settingsPath) {
+  settingsFile = makeAbsolutePath(settingsPath);
+}
+
 module.exports = {
   settingsInput,
   settingsFields,
@@ -75,5 +82,6 @@ module.exports = {
   putSettings,
   updateSettings,
   getAwsSettings,
-  filterSettings
+  filterSettings,
+  setSettingsFile,
 };

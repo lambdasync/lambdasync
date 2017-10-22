@@ -2,7 +2,12 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const chainData = require('chain-promise-data');
 const expressCompat = require('./express-compat');
+const {getSettings} = require('../settings');
+const {readFile} = require('../file');
+const {startWith, makeAbsolutePath} = require('../util');
+const {LAMBDASYNC_ROOT} = require('../constants');
 
 function setup(settings, lambdaHandler) {
   const app = express();
@@ -45,8 +50,31 @@ function start(settings, lambdaHandler) {
   return app;
 }
 
-exports = module.exports = start;
+startWith()
+  .then(chainData(getSettings, settings => ({settings})))
+  // We need package.json to check if there is a custom handler path
+  .then(chainData(
+    () => readFile(path.join(LAMBDASYNC_ROOT, 'package.json'), JSON.parse),
+    packageJson => ({packageJson})
+  ))
+  .then(chainData(
+    ({packageJson}) => {
+      let handlerPath = makeAbsolutePath('index.js');
+      if (packageJson && packageJson.lambdasync && packageJson.lambdasync.entry) {
+        handlerPath = makeAbsolutePath(packageJson.lambdasync.entry);
+      }
+      const lambdaHandler = require(handlerPath).handler;
+      return {lambdaHandler};
+    }
+  ))
+  .then(chainData(
+    ({ settings, lambdaHandler }) => start(settings, lambdaHandler)
+  ));
+
+
+exports = module.exports = {};
 
 if (process.env.NODE_ENV === 'test') {
+    exports.start = start;
     exports.setup = setup;
 }

@@ -14,7 +14,7 @@ function express(lambdasyncMeta) {
     requestToLambdaEvent(req) {
       return {
         resource: RESOURCE_PATH,
-        path: req.originalUrl,
+        path: req.path,
         httpMethod: req.method,
         headers: req.headers,
         queryStringParameters: req.query,

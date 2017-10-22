@@ -127,6 +127,33 @@ lambdasync config memory=192
 lambdasync config description='Example project for lambdasync'
 ```
 
+## Deploy configuration
+Lambdasyncs goal is to provide as close to a "no config" experience, while still being a useful day to day tool for building serverless APIs. This is a hard line to walk, the most important thing is that the tool works out of the box with as little setup as possible, if you do find yourself wanting to change some Lambdasync behavior this is probably the section for you.
+
+To configure Lambdasync you create a "lambdasync" JSON object in your `package.json` and add any of the following fields:
+
+* `entry` - The path to your entry/main file relative to the project root
+* `include` - An array of glob patterns* matching files that should be included in deploys to AWS Lambda
+* `ignore` - An array of glob patterns* matching files that should be ignored in deploys to AWS Lambda
+
+Glob patterns are the `node_modules/**` or `*.js` you see in a lot of configuration and command line tools. Lambdasync supports any glob patterns compatible with [minimatch](https://github.com/isaacs/minimatch) where you can also find some more examples.
+
+**Example package.json**:
+```
+{
+  "name": "my-project",
+  "version": "1.0.0",
+  "lambdasync": {
+    "entry": "dist/index.js",
+    "ignore": ["dist/secrets/**"],
+    "include": ["dist/**"]
+  }
+}
+```
+
+With this configuration only your `dist/` directory will be deployed, and everything in it except the contents of your `dist/secrets/` directory, and Lambda will be configured to look for the exported `handler` function in your `dist/index.js` file instead of the default `index.js`. 
+
+
 ## Calling AWS SDK methods
 A hidden feature of lambdasync that is at least very useful during development for exploring the AWS SDK is the ability to call any [AWS SDK](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/index.html) method from the command line.
 

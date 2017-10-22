@@ -80,17 +80,22 @@ function getDefaults() {
 }
 
 function getSettingsInput(defaults) {
-  return inquirer.prompt([
-    addInputDefault(defaults, PROMPT_INPUT_FUNCTION_NAME),
-    addInputDefault(defaults, PROMPT_INPUT_ACCESS_KEY),
-    addInputDefault(defaults, PROMPT_INPUT_SECRET_KEY),
-    addInputDefault(defaults, PROMPT_CHOICE_REGION)
-  ])
-    .then(function (result) {
-      result.profileName = defaults.profileName;
+  const prompts = [];
+  prompts.push(addInputDefault(defaults, PROMPT_INPUT_FUNCTION_NAME));
+  if (!defaults.accessKey) {
+    prompts.push(addInputDefault(defaults, PROMPT_INPUT_ACCESS_KEY));
+  }
+  if (!defaults.secretKey) {
+    prompts.push(addInputDefault(defaults, PROMPT_INPUT_SECRET_KEY));
+  }
+  prompts.push(addInputDefault(defaults, PROMPT_CHOICE_REGION));
+
+  return inquirer.prompt(prompts)
+    .then(result => {
+      const settings = Object.assign(defaults, result);
       return Promise.all([
-        updateSettings(result),
-        persistAwsConfig(result)
+        updateSettings(settings),
+        persistAwsConfig(settings)
       ])
         .then(getSettings);
     })

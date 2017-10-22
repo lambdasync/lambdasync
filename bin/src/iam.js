@@ -1,7 +1,8 @@
 const path = require('path');
+const chainData = require('chain-promise-data');
 
 const aws = require('./aws');
-const {awsPromise, logMessage, delay, mustacheLite, chainData, startWith} = require('./util');
+const {awsPromise, logMessage, delay, mustacheLite, startWith} = require('./util');
 const {readFile} = require('./file');
 const {
   LAMBDASYNC_ROOT,

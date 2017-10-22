@@ -8,6 +8,7 @@ const EXCEPTIONS = {
   INIT_ALREADY_RUN: exception('INIT_ALREADY_RUN', 'Init already run')
 };
 const SETTINGS_FILE = 'lambdasync.json';
+const DEPENDENCY_HASH_FILE = '.dependencyhash';
 const AWS_USER_DIR = path.join(userHome, '.aws');
 const AWS_CREDENTIALS_PATH = path.join(AWS_USER_DIR, 'credentials');
 const AWS_CONFIG_PATH = path.join(AWS_USER_DIR, 'config');
@@ -27,6 +28,8 @@ const LAMBDASYNC_INVOKE_POLICY = 'LambdasyncInvokePolicy';
 const LAMBDASYNC_DYNAMODB_POLICY = 'LambdasyncDynamoDBInvokePolicy';
 const API_STAGE_NAME = 'prod';
 const TARGET_ROOT = process.cwd();
+const TARGET_HIDDEN_DIR = path.join(TARGET_ROOT, '.lambdasync');
+const TARGET_DEPLOY_DIR = path.join(TARGET_HIDDEN_DIR, 'deploy');
 const PROMPT_CONFIRM_OVERWRITE_FUNCTION = {type: 'confirm', name: 'confirm', message: 'Function already exists, overwrite?'};
 const PROMPT_INPUT_PROFILE_NAME = {type: 'input', name: 'profileName', message: 'Profile name', default: 'lambdasync'};
 const PROMPT_INPUT_FUNCTION_NAME = {type: 'input', name: 'lambdaName', message: 'Function name'};
@@ -45,6 +48,7 @@ const PROMPT_CHOICE_REGION = {type: 'list', name: 'region', message: 'Region', c
 module.exports = {
   EXCEPTIONS,
   SETTINGS_FILE,
+  DEPENDENCY_HASH_FILE,
   AWS_USER_DIR,
   AWS_CREDENTIALS_PATH,
   AWS_CONFIG_PATH,
@@ -56,6 +60,8 @@ module.exports = {
   LAMBDASYNC_DYNAMODB_POLICY,
   API_STAGE_NAME,
   TARGET_ROOT,
+  TARGET_HIDDEN_DIR,
+  TARGET_DEPLOY_DIR,
   PROMPT_CONFIRM_OVERWRITE_FUNCTION,
   PROMPT_INPUT_PROFILE_NAME,
   PROMPT_INPUT_FUNCTION_NAME,

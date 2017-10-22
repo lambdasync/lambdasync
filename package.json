@@ -1,6 +1,6 @@
 {
   "name": "lambdasync",
-  "version": "3.1.2",
+  "version": "3.2.6",
   "description": "Easy sync between local code and AWS lambda functions",
   "main": "src/bin/index.js",
   "engines": {
@@ -10,7 +10,7 @@
     "lambdasync": "bin/src/index.js"
   },
   "scripts": {
-    "test": "jest --coverage --watch"
+    "test": "NODE_ENV=test jest --coverage --watch"
   },
   "repository": {
     "type": "git",
@@ -24,8 +24,10 @@
   "homepage": "https://github.com/lambdasync/lambdasync#readme",
   "dependencies": {
     "aws-sdk": "2.7.8",
+    "aws-serverless-express": "^1.2.0",
     "bestzip": "1.1.3",
     "body-parser": "1.15.2",
+    "chain-promise-data": "0.1.1",
     "chalk": "1.1.3",
     "copy-paste": "1.3.0",
     "cors": "2.8.1",
@@ -35,17 +37,17 @@
     "inquirer": "1.1.2",
     "marked": "0.3.6",
     "marked-terminal": "1.6.1",
+    "minimatch": "3.0.4",
     "minimist": "1.2.0",
     "mkdirp": "0.5.1",
-    "ncp": "2.0.0",
+    "recursive-copy": "2.0.6",
     "rimraf": "2.5.4",
+    "supertest": "2.0.1",
     "user-home": "2.0.0",
     "validate-npm-package-name": "2.2.2"
   },
   "devDependencies": {
-    "aws-serverless-express": "^1.2.0",
-    "jest": "^18.1.0",
-    "supertest": "2.0.1"
+    "jest": "20.0.4"
   },
   "jest": {
     "testEnvironment": "node",

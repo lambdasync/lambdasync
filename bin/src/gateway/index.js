@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const ncp = require('copy-paste');
+const chainData = require('chain-promise-data');
 
 const aws = require('../aws.js');
 const {
@@ -13,7 +14,6 @@ const {updateSettings, getSettings} = require('../settings.js');
 const {
   awsPromise,
   markdown,
-  chainData,
   startWith
 } = require('../util.js');
 
@@ -190,6 +190,7 @@ function deployApi(settings) {
   if (settings.apiGatewayUrl) {
     return settings;
   }
+  apigateway = getGateway(settings);
   const {apiGatewayRestApiId, region} = settings;
   const stageName = API_STAGE_NAME;
   const apiGatewayUrl = `https://${apiGatewayRestApiId}.execute-api.${region}.amazonaws.com/${stageName}`;
