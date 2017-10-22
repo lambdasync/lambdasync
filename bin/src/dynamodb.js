@@ -31,8 +31,8 @@ function createDynamoDbTable(settings, tableName) {
       KeyType: 'HASH',
     }],
     ProvisionedThroughput: {
-      ReadCapacityUnits: 25, // Free tier limit
-      WriteCapacityUnits: 25, // Free tier limit
+      ReadCapacityUnits: 5, // Free tier limit
+      WriteCapacityUnits: 5, // Free tier limit
     },
     TableName: tableName
   });
