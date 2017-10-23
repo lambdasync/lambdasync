@@ -9,6 +9,7 @@ const {version} = require('../../package.json');
 const {getSettings,setSettingsFile} = require('./settings');
 const maybeInit = require('./init');
 const deploy = require('./deploy');
+const {parseCommandArgs} = require('./util');
 const {setupApiGateway, deployApi} = require('./gateway');
 const {setLambdaPermission} = require('./permission');
 const {callApi} = require('./call-api');
@@ -16,6 +17,7 @@ const {makeLambdaRole} = require('./iam');
 const scaffold = require('./scaffold');
 const {config, variable} = require('./config');
 const {logs} = require('./logs');
+const {handleTableCommand} = require('./dynamodb');
 const {LAMBDASYNC_SRC} = require('./constants');
 
 const command = minimist(process.argv.slice(2), {
@@ -49,6 +51,15 @@ function handleCommand(command) {
   if (command._[0] === 'logs') {
     return getSettings()
       .then(settings => logs(settings));
+  }
+
+  if (command._[0] === 'table') {
+    return getSettings()
+      .then(settings => handleTableCommand(
+        settings,
+        command._[1],
+        parseCommandArgs(command._.slice(1))
+      ));
   }
 
   if (command._[0] === 'config') {

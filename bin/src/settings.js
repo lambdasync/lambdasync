@@ -27,7 +27,8 @@ const settingsFields = [
   'apiGatewayUrl',
   'apiGatewayRestApiId',
   'apiGatewayResourceId',
-  'apiGatewayDeploymentId'
+  'apiGatewayDeploymentId',
+  'dynamoDbTables',
 ];
 
 let settingsFile = path.join(process.cwd(), SETTINGS_FILE);

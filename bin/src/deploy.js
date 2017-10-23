@@ -23,7 +23,7 @@ const {
   makeAbsolutePath,
   removeCurrentPath
 } = require('./util');
-const {updateSettings} = require('./settings');
+const {getSettings, updateSettings} = require('./settings');
 const {
   LAMBDASYNC_BIN,
   LAMBDASYNC_SRC,
@@ -74,6 +74,7 @@ function doDeploy(type) {
       packageJson => ({ packageJson })
     ))
     .then(chainData(createBundle, ignoreData))
+    .then(chainData(() => getSettings(), settings => ({ settings })))
     .then(deployFunc)
     .then(handleSuccess)
     .catch(err => {
@@ -243,7 +244,7 @@ function getHandlerPath(entryConfig) {
   }.handler`;
 }
 
-function updateFunction({packageJson = {}}) {
+function updateFunction({settings = {}, packageJson = {}}) {
   // If there is a custom entry point set incorporate it into the Handler
   const { entry } = packageJson.lambdasync || {};
   const Handler = getHandlerPath(entry);
@@ -269,7 +270,7 @@ function updateFunctionCode() {
   });
 }
 
-function createFunction({ packageJson }) {
+function createFunction({ settings= {}, packageJson = {} }) {
   const { entry } = packageJson.lambdasync || {};
   const Handler = getHandlerPath(entry);
   return new Promise((resolve, reject) => {
