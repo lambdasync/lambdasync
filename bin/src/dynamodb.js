@@ -1,6 +1,7 @@
 const path = require('path');
 const chainData = require('chain-promise-data');
 
+const {jsonStringify} = require('./transform');
 const aws = require('./aws');
 const {
   awsPromise,
@@ -8,15 +9,18 @@ const {
   delay,
   mustacheLite,
   startWith,
-  handleGenericFailure
+  handleGenericFailure,
+  npmInstall,
+  markdown
 } = require('./util');
-const {readFile} = require('./file');
+const {readFile, writeFile} = require('./file');
 const {
   LAMBDASYNC_ROOT,
   LAMBDASYNC_EXEC_ROLE,
   LAMBDASYNC_INVOKE_POLICY,
   LAMBDASYNC_DYNAMODB_POLICY,
-  LAMBDASYNC_SCALING_ROLE
+  LAMBDASYNC_SCALING_ROLE,
+  TARGET_ROOT
 } = require('./constants');
 const {updateSettings, getSettings} = require('./settings');
 const {
@@ -41,7 +45,6 @@ function getTableFromSettings(settings, tableName) {
 function setupAutoScalingPolicy(settings, tableName) {
   const AWS = aws(settings);
   const api = new AWS.ApplicationAutoScaling();
-  debugger;
 
   return registerScalableTarget(api, settings, tableName)
     .then(() => Promise.all([
@@ -72,6 +75,41 @@ function setupAutoScalingPolicy(settings, tableName) {
         },
       }),
     ]));
+}
+
+function addDynatableDependency() {
+  const packageJsonPath = path.join(TARGET_ROOT, 'package.json');
+  return readFile(packageJsonPath, JSON.parse)
+    .then(packageJson => {
+      if (!packageJson || !packageJson.dependencies || !packageJson.dependencies.dynatable) {
+        packageJson.dependencies = packageJson.dependencies || {};
+        packageJson.dependencies.dynatable = '0.0.7';
+
+        return writeFile(packageJsonPath, packageJson, jsonStringify)
+          .then(() => npmInstall())
+          .then(() => packageJson);
+      }
+
+      return packageJson;
+    });
+}
+
+function scaffoldTables(settings) {
+  if (settings && settings.dynamoDbTables) {
+    debugger;
+    const tables = settings.dynamoDbTables.reduce((acc, table, i) => {
+      if (i !== 0) {
+        acc += '\n';
+      }
+      acc += `  ${table.tableName}: dynatable(docClient, '${table.tableName}', { id: 'N' }),`;
+      return acc;
+    }, '');
+
+    readFile(path.join(LAMBDASYNC_ROOT, 'bin', 'template', 'tables.js'))
+      .then(template => mustacheLite(template, { tables }))
+      .then(tables => writeFile(path.join(TARGET_ROOT, 'tables.js'), tables));
+  }
+  return;
 }
 
 function registerScalableTarget(api, settings, tableName) {
@@ -133,19 +171,30 @@ function handleTableCommand(settings, tableName) {
       () => setupDynamoDbTablePolicy(settings, tableName),
       res => ({ policyArn: res.policyArn })
     ))
-    .then(data => {
-      debugger;
-      let tables = settings.dynamoDbTables || [];
-      tables.push(data);
-      return updateSettings({
-        dynamoDbTables: tables
-      })
+    .then(chainData(
+      data => {
+        let tables = settings.dynamoDbTables || [];
+        tables.push(data);
+        return updateSettings({
+          dynamoDbTables: tables
+        })
+          .then(getSettings)
+          // .then(setupAutoScalingRole) // TODO: Dynamically create this role
+          // .then(getSettings)
+          .then(settings => setupAutoScalingPolicy(settings, tableName))
+      },
+      () => ({}),
+    ))
+    .then(chainData(
+      () => addDynatableDependency()
         .then(getSettings)
-        // .then(setupAutoScalingRole) // TODO: Dynamically create this role
-        // .then(getSettings)
-        .then(settings => setupAutoScalingPolicy(settings, tableName))
-        .then(() => data);
-    });
+        .then(scaffoldTables),
+      () => ({}),
+    ))
+    .then(data => console.log(markdown({
+      templatePath: 'markdown/table-success.md',
+      data
+    })));
 }
 
 module.exports = {

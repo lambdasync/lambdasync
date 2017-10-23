@@ -59,8 +59,7 @@ function handleCommand(command) {
         settings,
         command._[1],
         parseCommandArgs(command._.slice(1))
-      ))
-        .then(res => console.log('table result', res));
+      ));
   }
 
   if (command._[0] === 'config') {
