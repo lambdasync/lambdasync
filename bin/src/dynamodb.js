@@ -96,7 +96,6 @@ function addDynatableDependency() {
 
 function scaffoldTables(settings) {
   if (settings && settings.dynamoDbTables) {
-    debugger;
     const tables = settings.dynamoDbTables.reduce((acc, table, i) => {
       if (i !== 0) {
         acc += '\n';
@@ -113,7 +112,6 @@ function scaffoldTables(settings) {
 }
 
 function registerScalableTarget(api, settings, tableName) {
-  debugger;
   return Promise.all([
     awsPromise(api, 'registerScalableTarget', {
       MinCapacity: 5,
@@ -142,21 +140,39 @@ function createDynamoDbTable(settings, tableName) {
   const AWS = aws(settings);
   const api = new AWS.DynamoDB();
 
-  return awsPromise(api, 'createTable', {
-    AttributeDefinitions: [{
-      AttributeName: 'id',
-      AttributeType: 'N',
-    }],
-    KeySchema: [{
-      AttributeName: 'id',
-      KeyType: 'HASH',
-    }],
-    ProvisionedThroughput: {
-      ReadCapacityUnits: 5, // Free tier limit
-      WriteCapacityUnits: 5, // Free tier limit
-    },
-    TableName: tableName
-  });
+  // Check if table exists first
+  return awsPromise(api, 'describeTable', {
+    TableName: tableName,
+  })
+    .then(res => ({ tableArn: res.Table.TableArn }))
+    .catch(err => {
+      if (err.code === 'ResourceNotFoundException') {
+        return null;
+      }
+      throw err;
+    })
+    .then(res => {
+      if (res && res.tableArn) {
+        return res;
+      }
+      return awsPromise(api, 'createTable', {
+        AttributeDefinitions: [{
+          AttributeName: 'id',
+          AttributeType: 'N',
+        }],
+        KeySchema: [{
+          AttributeName: 'id',
+          KeyType: 'HASH',
+        }],
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 5, // Free tier limit
+          WriteCapacityUnits: 5, // Free tier limit
+        },
+        TableName: tableName
+      })
+      .then(res => ({ tableArn: res.TableDescription.TableArn }));
+    });
+
 }
 
 function handleTableCommand(settings, tableName) {
@@ -164,8 +180,7 @@ function handleTableCommand(settings, tableName) {
     tableName
   })
     .then(chainData(
-      () => createDynamoDbTable(settings, tableName),
-      res => ({ tableArn: res.TableDescription.TableArn })
+      () => createDynamoDbTable(settings, tableName)
     ))
     .then(chainData(
       () => setupDynamoDbTablePolicy(settings, tableName),
