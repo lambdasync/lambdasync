@@ -2,18 +2,36 @@ const path = require('path');
 const chainData = require('chain-promise-data');
 
 const aws = require('./aws');
-const {awsPromise, logMessage, delay, mustacheLite, startWith} = require('./util');
+const {
+  awsPromise,
+  logMessage,
+  delay,
+  mustacheLite,
+  startWith,
+  handleGenericFailure
+} = require('./util');
 const {readFile} = require('./file');
 const {
   LAMBDASYNC_ROOT,
   LAMBDASYNC_EXEC_ROLE,
   LAMBDASYNC_INVOKE_POLICY,
-  LAMBDASYNC_DYNAMODB_POLICY
+  LAMBDASYNC_DYNAMODB_POLICY,
+  LAMBDASYNC_SCALING_ROLE
 } = require('./constants');
 const {updateSettings, getSettings} = require('./settings');
-const {setupDynamoDbTablePolicy} = require('./iam');
+const {
+  setupDynamoDbTablePolicy,
+  createAutoScalingRole,
+  createAndAttachAutoScalingRolePolicy
+} = require('./iam');
 
 const ServiceNamespace = 'dynamodb';
+
+function setupAutoScalingRole(settings) {
+  return createAutoScalingRole(settings)
+    .then(() => createAndAttachAutoScalingRolePolicy(settings))
+    .catch(handleGenericFailure);
+}
 
 function getTableFromSettings(settings, tableName) {
   return settings && settings.dynamoDbTables.find(
@@ -23,6 +41,7 @@ function getTableFromSettings(settings, tableName) {
 function setupAutoScalingPolicy(settings, tableName) {
   const AWS = aws(settings);
   const api = new AWS.ApplicationAutoScaling();
+  debugger;
 
   return registerScalableTarget(api, settings, tableName)
     .then(() => Promise.all([
@@ -56,12 +75,13 @@ function setupAutoScalingPolicy(settings, tableName) {
 }
 
 function registerScalableTarget(api, settings, tableName) {
+  debugger;
   return Promise.all([
     awsPromise(api, 'registerScalableTarget', {
       MinCapacity: 5,
       MaxCapacity: 10000,
       ResourceId: `table/${tableName}`,
-      RoleARN: `arn:aws:iam::${settings.accountId}:role/service-role/DynamoDBAutoscaleRole`,
+      RoleARN: `arn:aws:iam::${settings.accountId}:role/service-role/${LAMBDASYNC_SCALING_ROLE}`,
       ScalableDimension: 'dynamodb:table:ReadCapacityUnits',
       ServiceNamespace,
     }),
@@ -69,7 +89,7 @@ function registerScalableTarget(api, settings, tableName) {
       MinCapacity: 5,
       MaxCapacity: 10000,
       ResourceId: `table/${tableName}`,
-      RoleARN: `arn:aws:iam::${settings.accountId}:role/service-role/DynamoDBAutoscaleRole`,
+      RoleARN: `arn:aws:iam::${settings.accountId}:role/service-role/${LAMBDASYNC_SCALING_ROLE}`,
       ScalableDimension: 'dynamodb:table:WriteCapacityUnits',
       ServiceNamespace,
     })
@@ -114,12 +134,15 @@ function handleTableCommand(settings, tableName) {
       res => ({ policyArn: res.policyArn })
     ))
     .then(data => {
+      debugger;
       let tables = settings.dynamoDbTables || [];
       tables.push(data);
       return updateSettings({
         dynamoDbTables: tables
       })
         .then(getSettings)
+        // .then(setupAutoScalingRole) // TODO: Dynamically create this role
+        // .then(getSettings)
         .then(settings => setupAutoScalingPolicy(settings, tableName))
         .then(() => data);
     });

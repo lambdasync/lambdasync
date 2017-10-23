@@ -26,6 +26,8 @@ const LAMBDASYNC_BIN = path.join(LAMBDASYNC_ROOT, 'node_modules', '.bin');
 const LAMBDASYNC_EXEC_ROLE = 'LambdasyncExecRole';
 const LAMBDASYNC_INVOKE_POLICY = 'LambdasyncInvokePolicy';
 const LAMBDASYNC_DYNAMODB_POLICY = 'LambdasyncDynamoDBInvokePolicy';
+const LAMBDASYNC_SCALING_ROLE = 'DynamoDBAutoscaleRole';
+const LAMBDASYNC_SCALING_POLICY = 'DynamoDBAutoscalePolicy';
 const API_STAGE_NAME = 'prod';
 const TARGET_ROOT = process.cwd();
 const TARGET_HIDDEN_DIR = path.join(TARGET_ROOT, '.lambdasync');
@@ -58,6 +60,8 @@ module.exports = {
   LAMBDASYNC_EXEC_ROLE,
   LAMBDASYNC_INVOKE_POLICY,
   LAMBDASYNC_DYNAMODB_POLICY,
+  LAMBDASYNC_SCALING_ROLE,
+  LAMBDASYNC_SCALING_POLICY,
   API_STAGE_NAME,
   TARGET_ROOT,
   TARGET_HIDDEN_DIR,
